@@ -1,5 +1,5 @@
 
-# Club Management System (CMS)
+# IntelliMark
 
 A modern, full-stack SaaS application for managing club members, sponsorships, and events.
 
