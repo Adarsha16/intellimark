@@ -20,12 +20,10 @@ const Register = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-4">
-            {/* Decorative circles */}
             <div className="absolute top-20 left-20 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
             <div className="absolute bottom-20 right-20 w-72 h-72 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
 
             <div className="relative bg-white/95 backdrop-blur-sm p-10 rounded-2xl shadow-2xl w-full max-w-md border border-purple-100">
-                {/* Logo/Icon area */}
                 <div className="flex justify-center mb-6">
                     <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300">
                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,12 +90,6 @@ const Register = () => {
                     </p>
                 </div>
 
-                {/* Divider with text */}
-                <div className="mt-8 flex items-center">
-                    <div className="flex-1 border-t border-gray-300"></div>
-                    <span className="px-4 text-xs text-gray-500">SECURE REGISTRATION</span>
-                    <div className="flex-1 border-t border-gray-300"></div>
-                </div>
             </div>
         </div>
     );

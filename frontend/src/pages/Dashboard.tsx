@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { TrendingUp, Users, Calendar, DollarSign } from 'lucide-react';
+import { TrendingUp, Users, Calendar, DollarSign, Download } from 'lucide-react';
 
 const data = [
     { name: 'Jan', amount: 4000 },
@@ -12,20 +12,24 @@ const data = [
 ];
 
 const stats = [
-    { name: 'Total Revenue', value: '$24,500', icon: DollarSign, change: '+12%', color: 'bg-emerald-100 text-emerald-600' },
-    { name: 'Active Members', value: '124', icon: Users, change: '+4%', color: 'bg-blue-100 text-blue-600' },
-    { name: 'Upcoming Events', value: '3', icon: Calendar, change: 'In 7 days', color: 'bg-violet-100 text-violet-600' },
+    { name: 'Total Revenue', value: '$24,500', icon: DollarSign, change: '+12%', color: 'from-emerald-400 to-emerald-600' },
+    { name: 'Active Members', value: '124', icon: Users, change: '+4%', color: 'from-blue-400 to-blue-600' },
+    { name: 'Upcoming Events', value: '3', icon: Calendar, change: 'In 7 days', color: 'from-violet-400 to-violet-600' },
 ];
 
 const Dashboard = () => {
     return (
         <div className="space-y-8">
-            <div className="flex justify-between items-end">
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Dashboard Overview</h2>
-                    <p className="text-slate-500">Welcome back, here is what's happening today.</p>
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                        Dashboard Overview
+                    </h2>
+                    <p className="text-gray-600">Welcome back, here is what's happening today.</p>
                 </div>
-                <button className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm transition">
+                <button className="bg-white/90 backdrop-blur-sm border-2 border-purple-100 text-purple-700 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-50 hover:border-purple-200 shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 group">
+                    <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
                     Download Report
                 </button>
             </div>
@@ -38,17 +42,24 @@ const Dashboard = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between"
+                        className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-lg border-2 border-purple-100 hover:border-purple-200 hover:shadow-xl transition-all duration-300 group"
                     >
-                        <div>
-                            <p className="text-sm font-medium text-slate-500">{stat.name}</p>
-                            <h3 className="text-3xl font-bold text-slate-900 mt-1">{stat.value}</h3>
-                            <span className="inline-flex items-center text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full mt-2">
-                                <TrendingUp className="w-3 h-3 mr-1" /> {stat.change}
-                            </span>
-                        </div>
-                        <div className={`p-4 rounded-xl ${stat.color}`}>
-                            <stat.icon className="w-6 h-6" />
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                                    {stat.name}
+                                </p>
+                                <h3 className="text-4xl font-bold text-gray-900 mb-3">
+                                    {stat.value}
+                                </h3>
+                                <div className="inline-flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                                    <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
+                                    {stat.change}
+                                </div>
+                            </div>
+                            <div className={`p-4 rounded-2xl bg-gradient-to-br ${stat.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <stat.icon className="w-7 h-7" />
+                            </div>
                         </div>
                     </motion.div>
                 ))}
@@ -60,41 +71,62 @@ const Dashboard = () => {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                    className="lg:col-span-2 bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-lg border-2 border-purple-100"
                 >
-                    <h3 className="text-lg font-bold text-slate-900 mb-6">Funding Overview</h3>
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold text-gray-900">Funding Overview</h3>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-3 h-3 rounded-full bg-purple-600"></div>
+                                <span>2024</span>
+                            </div>
+                        </div>
+                    </div>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data}>
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
-                                <Tooltip
-                                    cursor={{ fill: '#f1f5f9' }}
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#94a3b8', fontSize: 13 }}
+                                    dy={10}
                                 />
-                                <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#94a3b8', fontSize: 13 }}
+                                />
+                                <Tooltip
+                                    cursor={{ fill: '#f3e8ff', opacity: 0.3 }}
+                                    contentStyle={{
+                                        borderRadius: '12px',
+                                        border: 'none',
+                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                                        background: 'linear-gradient(to bottom right, #7c3aed, #4f46e5)',
+                                        color: 'white',
+                                        fontWeight: 600
+                                    }}
+                                />
+                                <Bar dataKey="amount" radius={[8, 8, 0, 0]}>
                                     {data.map((_, index) => (
-                                        <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#4f46e5' : '#818cf8'} />
+                                        <Cell
+                                            key={`cell-${index}`}
+                                            fill={`url(#gradient${index})`}
+                                        />
                                     ))}
                                 </Bar>
+                                <defs>
+                                    {data.map((_, index) => (
+                                        <linearGradient key={`gradient${index}`} id={`gradient${index}`} x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor={index % 2 === 0 ? '#9333ea' : '#7c3aed'} />
+                                            <stop offset="100%" stopColor={index % 2 === 0 ? '#6366f1' : '#818cf8'} />
+                                        </linearGradient>
+                                    ))}
+                                </defs>
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4 }}
-                    className="bg-gradient-to-br from-indigo-600 to-violet-700 p-8 rounded-2xl text-white flex flex-col justify-between"
-                >
-                    <div>
-                        <h3 className="text-xl font-bold opacity-90">Pro Plan</h3>
-                        <p className="text-indigo-100 text-sm mt-2 opacity-80">Unlock AI features for sponsor matching and event prediction.</p>
-                    </div>
-                    <button className="bg-white text-indigo-600 font-bold py-3 rounded-xl shadow-lg hover:bg-indigo-50 transition w-full">
-                        Upgrade Now
-                    </button>
                 </motion.div>
             </div>
         </div>
