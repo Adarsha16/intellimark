@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, sponser
+from app.api import auth, sponser, admin
 
 app = FastAPI(title="Club Management System")
 
@@ -16,6 +16,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(sponser.router, prefix="/sponsors", tags=["Sponsors"])
+app.include_router(admin.router, prefix="/admin", tags=["Admin Control"])
 
 
 @app.get("/")

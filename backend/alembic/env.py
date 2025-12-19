@@ -9,6 +9,7 @@ from app.db.base import Base
 from app.models.user import User
 from app.models.sponser import Sponsor
 from app.core.config import settings
+from app.models.admin import ActivityLog
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
