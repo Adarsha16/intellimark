@@ -5,7 +5,8 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Sponsors from './pages/Sponsers';
-import Dashboard from './pages/Dashboard'; // Import this
+import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -23,10 +24,11 @@ function App() {
           <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="sponsors" element={<Sponsors />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
       </AuthProvider>
-    </BrowserRouter>
+    </BrowserRouter >
   );
 }
 
