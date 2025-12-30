@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "accelerate==0.27.2",
-    "aiofiles>=25.1.0",
     "alembic>=1.17.2",
     "asyncpg>=0.31.0",
     "bcrypt==4.0.1",
@@ -21,12 +20,10 @@ dependencies = [
     "python-jose[cryptography]>=3.5.0",
     "python-multipart>=0.0.20",
     "safetensors==0.4.2",
+    "sentence-transformers>=5.2.0",
     "sqlalchemy>=2.0.45",
-    "tokenizers==0.15.2",
-    "torch==2.1.0",
-    "torchaudio==2.1.0",
-    "torchvision==0.16.0",
-    "transformers==4.38.2",
+    "torch>=2.9.1",
+    "transformers>=4.49.0",
     "uvicorn[standard]>=0.38.0",
 ]
 

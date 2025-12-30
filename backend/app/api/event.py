@@ -7,6 +7,8 @@ from app.models.event import Event
 from app.schemas.event import EventCreate, EventOut
 from app.core.logger import log_activity
 from app.api.deps import get_current_user
+from app.models.sponser import Sponsor
+from app.services.matcher import calculate_matches  # Import our new service
 
 router = APIRouter()
 
@@ -53,3 +55,55 @@ async def generate_ai_strategy(event_id: int, db: AsyncSession = Depends(get_db)
     event.marketing_strategy = strategy
     await db.commit()
     return {"strategy": strategy}
+
+
+@router.get("/{event_id}/match-sponsors")
+async def match_sponsors_for_event(event_id: int, db: AsyncSession = Depends(get_db)):
+    # 1. Fetch the Event
+    result_event = await db.execute(select(Event).where(Event.id == event_id))
+    event = result_event.scalars().first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # 2. Fetch All Sponsors
+    result_sponsors = await db.execute(select(Sponsor))
+    sponsors = result_sponsors.scalars().all()
+
+    # 3. Prepare Text for Matching
+    # Combining title, description, and location gives the AI more context
+    event_text = f"{event.title}. {event.description}. Located at {event.location}."
+
+    # 4. Run AI Matching
+    matches = calculate_matches(event_text, sponsors)
+
+    return matches
+
+
+@router.put("/{event_id}", response_model=EventOut)
+async def update_event(
+    event_id: int, event_data: EventCreate, db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    event = result.scalars().first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # Update fields (convert date string to datetime if needed, pydantic handles mostly)
+    for key, value in event_data.dict().items():
+        setattr(event, key, value)
+
+    await db.commit()
+    await db.refresh(event)
+    return event
+
+
+@router.delete("/{event_id}")
+async def delete_event(event_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    event = result.scalars().first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    await db.delete(event)
+    await db.commit()
+    return {"message": "Event deleted"}

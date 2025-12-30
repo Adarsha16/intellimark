@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
@@ -22,3 +22,33 @@ async def create_sponsor(sponsor: SponsorCreate, db: AsyncSession = Depends(get_
 async def get_sponsors(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Sponsor))
     return result.scalars().all()
+
+
+@router.put("/{sponsor_id}", response_model=SponsorOut)
+async def update_sponsor(
+    sponsor_id: int, sponsor_data: SponsorCreate, db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Sponsor).where(Sponsor.id == sponsor_id))
+    sponsor = result.scalars().first()
+    if not sponsor:
+        raise HTTPException(status_code=404, detail="Sponsor not found")
+
+    # Update fields
+    for key, value in sponsor_data.dict().items():
+        setattr(sponsor, key, value)
+
+    await db.commit()
+    await db.refresh(sponsor)
+    return sponsor
+
+
+@router.delete("/{sponsor_id}")
+async def delete_sponsor(sponsor_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Sponsor).where(Sponsor.id == sponsor_id))
+    sponsor = result.scalars().first()
+    if not sponsor:
+        raise HTTPException(status_code=404, detail="Sponsor not found")
+
+    await db.delete(sponsor)
+    await db.commit()
+    return {"message": "Sponsor deleted"}
