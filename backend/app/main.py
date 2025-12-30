@@ -1,14 +1,10 @@
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles  # Import this
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import auth, sponser, admin, event
-import os
 
 app = FastAPI(title="Club Management System")
 
 # CORS Setup (Allow Frontend)
-os.makedirs("static/generated_posters", exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
 origins = ["http://localhost:5173"]  # Vite default port
 app.add_middleware(
     CORSMiddleware,

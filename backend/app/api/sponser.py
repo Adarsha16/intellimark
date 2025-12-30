@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy import select
 from typing import List
 from app.db.session import get_db
 from app.schemas.sponser import SponsorCreate, SponsorOut
