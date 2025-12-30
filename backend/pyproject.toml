@@ -1,26 +1,36 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "Club Management System Backend"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"
 dependencies = [
-    "accelerate==0.27.2",
-    "alembic>=1.17.2",
-    "asyncpg>=0.31.0",
+    "accelerate>=0.27.2",
+    "alembic>=1.13.0",
+    "asyncpg>=0.29.0",
     "bcrypt==4.0.1",
-    "diffusers==0.27.2",
-    "email-validator>=2.3.0",
-    "fastapi>=0.124.4",
+    "diffusers>=0.29.0",         # Requires newer torch
+    "email-validator>=2.1.0",
+    "fastapi>=0.109.0",
+    "huggingface-hub>=0.23.0",   # Fixes cached_download error
+    "numpy<2.0.0",               # Fixes numpy 2.0 crash
     "passlib[bcrypt]>=1.7.4",
-    "psycopg2-binary>=2.9.11",
-    "pydantic-settings>=2.12.0",
-    "python-jose[cryptography]>=3.5.0",
-    "python-multipart>=0.0.20",
-    "safetensors==0.4.2",
-    "sentence-transformers>=5.2.0",
-    "sqlalchemy>=2.0.45",
-    "torch>=2.9.1",
-    "transformers>=4.49.0",
-    "uvicorn[standard]>=0.38.0",
+    "psycopg2-binary>=2.9.9",
+    "pydantic-settings>=2.1.0",
+    "python-jose[cryptography]>=3.3.0",
+    "python-multipart>=0.0.9",
+    "safetensors>=0.4.2",
+    "sentence-transformers>=3.0.0",
+    "sqlalchemy>=2.0.0",
+    "torch>=2.4.0",              # UPDATED: Needs to be new for Diffusers
+    "torchaudio>=2.4.0",
+    "torchvision>=0.19.0",
+    "transformers>=4.41.0",
+    "uvicorn[standard]>=0.27.0",
 ]
+
+# FIX: Changed 'indexes' to 'index' (singular)
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

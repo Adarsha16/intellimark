@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
-import { Calendar, MapPin, Users, Plus, Sparkles, Handshake, X } from 'lucide-react';
+import { Calendar, MapPin, Plus, Handshake, X, Pencil, Trash2, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Pencil, Trash2 } from 'lucide-react';
 
 export default function Events() {
     const [events, setEvents] = useState<any[]>([]);
@@ -41,7 +40,10 @@ export default function Events() {
             toast.error("Operation failed");
         }
     };
-
+    const handleGeneratePoster = async (id: number) => {
+        toast.success("Generating poster... check back in ~30 seconds.");
+        await api.post(`/events/${id}/generate-poster`);
+    };
     const openEdit = (event: any) => {
         setEditingId(event.id);
         setFormData({
@@ -140,6 +142,48 @@ export default function Events() {
                                         <MapPin className="w-4 h-4 mr-2 text-indigo-500" />
                                         {event.location}
                                     </div>
+                                </div>
+                                <div className="pt-4 border-t border-slate-100 space-y-3">
+
+
+
+                                    {/* 2. NEW: Generate Poster Button */}
+                                    <Button
+                                        variant="outline"
+                                        className="w-full gap-2 border-violet-200 text-violet-700 hover:bg-violet-50"
+                                        onClick={() => handleGeneratePoster(event.id)}
+                                    >
+                                        <ImageIcon className="w-4 h-4" /> Generate AI Poster
+                                    </Button>
+
+                                    {/* 3. NEW: Display Generated Image */}
+                                    {event.marketing_strategy && event.marketing_strategy.includes("**Poster:**") && (
+                                        <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative group">
+                                            <div className="bg-slate-50 px-3 py-2 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase flex justify-between">
+                                                <span>AI Generated Poster</span>
+                                                <a
+                                                    href={`http://localhost:8000${event.marketing_strategy.split('**Poster:** ')[1].trim()}`}
+                                                    target="_blank"
+                                                    className="text-indigo-600 hover:underline"
+                                                >
+                                                    Open Full Size
+                                                </a>
+                                            </div>
+                                            <img
+                                                /* Extract the URL from the string */
+                                                src={`http://localhost:8000${event.marketing_strategy.split('**Poster:** ')[1].trim()}`}
+                                                alt="AI Poster"
+                                                className="w-full h-auto object-cover hover:scale-105 transition-transform duration-500"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Display Text Strategy if exists (optional cleanup) */}
+                                    {event.marketing_strategy && !event.marketing_strategy.includes("**Poster:**") && (
+                                        <div className="bg-slate-50 p-3 rounded text-xs text-slate-600">
+                                            {event.marketing_strategy}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

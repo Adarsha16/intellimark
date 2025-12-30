@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
@@ -8,7 +8,13 @@ from app.schemas.event import EventCreate, EventOut
 from app.core.logger import log_activity
 from app.api.deps import get_current_user
 from app.models.sponser import Sponsor
-from app.services.matcher import calculate_matches  # Import our new service
+from app.services.matcher import calculate_matches
+from app.db.session import (
+    get_db,
+    AsyncSessionLocal,
+)  # Ensure you have a session factory
+from app.services.poster_gen.generate_base_sdxl import generate_event_poster
+
 
 router = APIRouter()
 
@@ -107,3 +113,55 @@ async def delete_event(event_id: int, db: AsyncSession = Depends(get_db)):
     await db.delete(event)
     await db.commit()
     return {"message": "Event deleted"}
+
+
+@router.post("/{event_id}/generate-poster")
+async def generate_poster_api(
+    event_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)
+):
+    # 1. Fetch Event
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    event = result.scalars().first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # 2. Define Background Task
+    async def task_wrapper(eid: int, title: str, date: str, loc: str, desc: str):
+        # Run heavy CPU/GPU work in thread to not block Async loop
+        import asyncio
+
+        loop = asyncio.get_running_loop()
+
+        # Generate URL
+        image_url = await loop.run_in_executor(
+            None,
+            generate_event_poster,
+            title,
+            date,
+            loc,
+            desc,
+            "modern",  # You can pass aesthetic here later
+        )
+
+        # Update DB in a new session
+        async with AsyncSessionLocal() as session:
+            res = await session.execute(select(Event).where(Event.id == eid))
+            ev = res.scalars().first()
+            # Append result to strategy field since we don't have a poster_url column yet
+            # If you added a poster_url column, save it there instead.
+            ev.marketing_strategy = (
+                ev.marketing_strategy or ""
+            ) + f"\n\n**Poster:** {image_url}"
+            await session.commit()
+
+    # 3. Add to Queue
+    background_tasks.add_task(
+        task_wrapper,
+        event.id,
+        event.title,
+        str(event.date),
+        event.location,
+        event.description,
+    )
+
+    return {"message": "Poster generation started in background"}
