@@ -6,6 +6,7 @@ import {
     LayoutDashboard, Users, Settings, LogOut,
     Bell, ChevronDown, Sparkles
 } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 
@@ -16,6 +17,7 @@ const Layout = () => {
 
     const navItems = [
         { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+        { name: 'Events', path: '/events', icon: Calendar },
         { name: 'Sponsors', path: '/sponsors', icon: Users },
         { name: 'Settings', path: '/settings', icon: Settings },
     ];
