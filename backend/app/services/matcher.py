@@ -1,5 +1,5 @@
-from sentence_transformers import SentenceTransformer, util
-import torch
+from sentence_transformers.SentenceTransformer import SentenceTransformer
+from sentence_transformers import util
 
 # Load a lightweight, pre-trained model optimized for semantic similarity
 # 'all-MiniLM-L6-v2' is fast and has high accuracy for this use case.

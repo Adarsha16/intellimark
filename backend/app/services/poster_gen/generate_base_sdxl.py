@@ -2,190 +2,236 @@ import torch
 import os
 import uuid
 import logging
-import re
+import platform
+import gc
+import threading
+from typing import Dict, Tuple
+from dataclasses import dataclass
+from enum import Enum
 from PIL import Image, ImageDraw, ImageFont
-from diffusers import (
-    StableDiffusionXLPipeline,
-    UNet2DConditionModel,
-    EulerDiscreteScheduler,
-)
-from huggingface_hub import hf_hub_download
-from safetensors.torch import load_file
+from diffusers import AutoPipelineForText2Image
 
-# Attempt to import AI generator, fallback if missing
-try:
-    from .ai_keyword_generator import generate_visual_keywords_with_ai
-except ImportError:
-    generate_visual_keywords_with_ai = None
-
+# Configure Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# --- GLOBAL MODEL CACHE ---
-# We store the model in a global variable so we don't reload 6GB of data every request
-_pipe = None
+# Cache for fonts
+_font_cache = {}
 
 
-def get_font(size):
-    """Cross-platform font loading."""
-    font_paths = [
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "C:/Windows/Fonts/arialbd.ttf",
-        "C:/Windows/Fonts/arial.ttf",
-        "/System/Library/Fonts/Helvetica.ttc",
-    ]
-    for path in font_paths:
+# --- 1. CONFIGURATION ---
+class QualityPreset(Enum):
+    FAST = "fast"  # 1 step
+    BALANCED = "balanced"  # 2 steps
+    QUALITY = "quality"  # 4 steps
+
+
+@dataclass
+class GenerationConfig:
+    steps: int
+    width: int
+    height: int
+    guidance: float
+
+    @classmethod
+    def from_preset(cls, preset: QualityPreset) -> "GenerationConfig":
+        presets = {
+            QualityPreset.FAST: cls(steps=1, width=512, height=768, guidance=0.0),
+            QualityPreset.BALANCED: cls(steps=2, width=512, height=768, guidance=0.0),
+            QualityPreset.QUALITY: cls(steps=4, width=512, height=768, guidance=0.0),
+        }
+        return presets.get(preset, presets[QualityPreset.BALANCED])
+
+
+# --- 2. AI KEYWORDS ---
+try:
+    from .ai_keyword_generator import generate_visual_keywords_with_ai
+
+    AI_KEYWORD_AVAILABLE = True
+except ImportError:
+    AI_KEYWORD_AVAILABLE = False
+
+
+# --- 3. TEXT RENDERER ---
+class TextOverlayRenderer:
+    @staticmethod
+    def get_font(size: int) -> ImageFont.FreeTypeFont:
+        if size in _font_cache:
+            return _font_cache[size]
+
+        system = platform.system()
+        candidates = []
+        if system == "Windows":
+            candidates = [
+                "C:/Windows/Fonts/arialbd.ttf",
+                "C:/Windows/Fonts/calibrib.ttf",
+            ]
+        else:
+            candidates = [
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/System/Library/Fonts/Helvetica.ttc",
+            ]
+
+        for path in candidates:
+            if os.path.exists(path):
+                try:
+                    font = ImageFont.truetype(path, size=size)
+                    _font_cache[size] = font
+                    return font
+                except:
+                    continue
+        return ImageFont.load_default()
+
+    @staticmethod
+    def render(img: Image.Image, info: Dict[str, str]) -> Image.Image:
+        W, H = img.size
+        overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+
+        # Gradient Backdrop
+        overlay_h = int(H * 0.30)
+        for i in range(overlay_h):
+            alpha = int((i / overlay_h) * 200)
+            draw.rectangle(
+                [(0, H - overlay_h + i), (W, H - overlay_h + i + 1)],
+                fill=(0, 0, 0, alpha),
+            )
+
+        # Text Logic
+        padding = int(W * 0.08)
+        font_title = TextOverlayRenderer.get_font(max(24, int(W / 12)))
+        font_meta = TextOverlayRenderer.get_font(max(14, int(W / 26)))
+
+        title = info.get("title", "Event").upper()
+        title_y = H - overlay_h + int(overlay_h * 0.3)
+
+        # Shadow & Main Text
+        draw.text(
+            (padding + 2, title_y + 2), title, font=font_title, fill=(0, 0, 0, 180)
+        )
+        draw.text((padding, title_y), title, font=font_title, fill="white")
+
+        meta = f"{info.get('date', 'TBD')}  •  {info.get('location', 'TBD')}"
+        meta_y = title_y + int(W / 12) + 15
+        draw.text((padding, meta_y), meta, font=font_meta, fill="#DDDDDD")
+
+        return Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
+
+
+# --- 4. MAIN GENERATOR (SINGLETON) ---
+class PosterGenerator:
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls):
+        # Thread-safe Singleton Pattern
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super().__new__(cls)
+                cls._instance.pipeline = None
+                cls._instance.model_id = "stabilityai/sd-turbo"
+        return cls._instance
+
+    def load_pipeline(self):
+        # Only load if not already loaded
+        if self.pipeline is not None:
+            return self.pipeline
+
+        logger.info(f"⏳ Loading Pipeline (One-time setup): {self.model_id}")
+
         try:
-            return ImageFont.truetype(path, size=size)
-        except (OSError, IOError):
-            continue
-    return ImageFont.load_default()
+            pipe = AutoPipelineForText2Image.from_pretrained(
+                self.model_id, torch_dtype=torch.float32, use_safetensors=True
+            )
 
+            # CPU Optimizations
+            pipe.to("cpu")
+            pipe.enable_attention_slicing()
+            # Note: Removed enable_model_cpu_offload as suggested (redundant for pure CPU)
 
-def target_size(aspect_ratio="4:5", base_long_side=1024):
-    """Calculate dimensions divisible by 8."""
-    if aspect_ratio == "1:1":
-        return 1024, 1024
-    if aspect_ratio == "16:9":
-        return 1024, 576
-    return 816, 1024  # Default 4:5ish
-
-
-def load_sdxl_lightning_pipe(device: str, steps=4):
-    """Loads the model config."""
-    base_model = "stabilityai/stable-diffusion-xl-base-1.0"
-    lightning_repo = "ByteDance/SDXL-Lightning"
-    ckpt_name = "sdxl_lightning_4step_unet.safetensors"  # Hardcoding 4 step for speed
-
-    use_cuda = device == "cuda"
-    dtype = torch.float16 if use_cuda else torch.float32
-
-    # 1. Load UNet
-    unet = UNet2DConditionModel.from_config(base_model, subfolder="unet")
-    unet.to(device=device, dtype=dtype)
-
-    unet_path = hf_hub_download(lightning_repo, ckpt_name)
-    unet_state = load_file(unet_path, device=device)
-    unet.load_state_dict(unet_state)
-
-    # 2. Load Pipeline
-    pipe = StableDiffusionXLPipeline.from_pretrained(
-        base_model,
-        unet=unet,
-        torch_dtype=dtype,
-        use_safetensors=True,
-        variant="fp16" if use_cuda else None,
-    ).to(device)
-
-    # 3. Scheduler
-    pipe.scheduler = EulerDiscreteScheduler.from_config(
-        pipe.scheduler.config, timestep_spacing="trailing"
-    )
-    return pipe
-
-
-def get_pipe():
-    """Singleton pattern to load model once."""
-    global _pipe
-    if _pipe is None:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        logger.info(f"⏳ Loading SDXL-Lightning on {device}...")
-        _pipe = load_sdxl_lightning_pipe(device, steps=4)
-    return _pipe
-
-
-def render_text_overlay(img: Image.Image, info: dict):
-    """Draws text on the image based on event info."""
-    W, H = img.size
-    img = img.convert("RGBA")
-    overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-
-    # Fonts
-    font_title = get_font(max(40, W // 14))
-    font_meta = get_font(max(20, W // 30))
-
-    # Dark Backdrop at bottom
-    backdrop_h = int(H * 0.25)
-    draw.rectangle([0, H - backdrop_h, W, H], fill=(0, 0, 0, 180))
-
-    # Text Logic
-    margin = 40
-    y_pos = H - backdrop_h + 30
-
-    # Title
-    draw.text(
-        (margin, y_pos),
-        info.get("title", "Event").upper(),
-        font=font_title,
-        fill="white",
-    )
-    y_pos += font_title.size + 10
-
-    # Meta Data
-    meta_text = f"{info.get('date', '')}  |  {info.get('location', '')}"
-    draw.text((margin, y_pos), meta_text, font=font_meta, fill="#CCCCCC")
-
-    return Image.alpha_composite(img, overlay).convert("RGB")
-
-
-# --- MAIN EXPORTED FUNCTION ---
-def generate_event_poster(
-    title: str, date: str, location: str, description: str, aesthetic: str = "modern"
-) -> str:
-    """
-    Main function called by FastAPI.
-    Returns: Relative URL path to the generated image.
-    """
-    pipe = get_pipe()
-    device = pipe.device
-
-    # 1. AI Keywords (Optional)
-    keywords = ""
-    if generate_visual_keywords_with_ai:
-        try:
-            keywords = generate_visual_keywords_with_ai(f"{title} - {description}")
+            self.pipeline = pipe
+            return pipe
         except Exception as e:
-            logger.warning(f"AI Keyword Gen failed: {e}")
+            logger.error(f"Failed to load pipeline: {e}")
+            raise e
 
-    # 2. Construct Prompt
-    # We combine the logic from your old extract_lines_from_prompt here
-    base_prompt = (
-        f"professional event poster for {title}, {aesthetic} style, {keywords}"
-    )
-    positive_prompt = f"{base_prompt}, high quality, 4k, no text, no letters"
-    negative_prompt = "text, letters, watermark, blurry, low quality, distorted, ugly"
+    def generate(
+        self,
+        title,
+        date,
+        location,
+        description,
+        aesthetic="modern",
+        quality_mode="balanced",
+    ):
+        # 1. Config & cleanup
+        gc.collect()
 
-    # 3. Generate Image
-    w, h = 816, 1024  # Approx 4:5
-    logger.info(f"🎨 Generating: {positive_prompt}")
+        try:
+            preset = QualityPreset(quality_mode)
+        except:
+            preset = QualityPreset.BALANCED
+        cfg = GenerationConfig.from_preset(preset)
 
-    # Random seed
-    g = torch.Generator(device=device).manual_seed(
-        torch.randint(0, 1000000, (1,)).item()
-    )
+        # 2. Pipeline Loading
+        pipe = self.load_pipeline()
 
-    image = pipe(
-        prompt=positive_prompt,
-        negative_prompt=negative_prompt,
-        width=w,
-        height=h,
-        num_inference_steps=4,  # Lightning is fast!
-        guidance_scale=0.0,  # Lightning needs 0 guidance often
-        generator=g,
-    ).images[0]
+        # 3. Prompt Engineering
+        keywords = ""
+        if AI_KEYWORD_AVAILABLE:
+            try:
+                keywords = generate_visual_keywords_with_ai(f"{title} {description}")
+            except:
+                pass
 
-    # 4. Text Overlay
-    info = {"title": title, "date": str(date), "location": location}
-    final_image = render_text_overlay(image, info)
+        style_map = {
+            "modern": "vector art, flat design, minimal, clean lines",
+            "tech": "cyberpunk, neon, futuristic, digital art",
+            "professional": "corporate, sleek, elegant, business",
+            "gaming": "esports, vibrant, energetic, dynamic",
+        }
+        style = style_map.get(aesthetic.lower(), "digital art")
 
-    # 5. Save
-    filename = f"poster_{uuid.uuid4().hex}.png"
-    save_dir = os.path.join("static", "generated_posters")
-    os.makedirs(save_dir, exist_ok=True)
+        prompt = (
+            f"event poster for {title}, {style}, {keywords}, "
+            "professional graphic design, 8k, vibrant colors, trending on artstation"
+        )
+        neg_prompt = "text, letters, watermark, blurry, low quality, distorted"
 
-    save_path = os.path.join(save_dir, filename)
-    final_image.save(save_path)
+        logger.info(f"🎨 Generating '{title}' ({cfg.steps} steps)...")
 
-    logger.info(f"✅ Saved to {save_path}")
-    return f"/static/generated_posters/{filename}"
+        # 4. Generation (With Inference Mode for Memory Safety)
+        with torch.inference_mode():
+            img = pipe(
+                prompt=prompt,
+                negative_prompt=neg_prompt,
+                width=cfg.width,
+                height=cfg.height,
+                num_inference_steps=cfg.steps,
+                guidance_scale=cfg.guidance,
+            ).images[0]
+
+        # 5. Overlay & Save
+        clean_date = str(date).split("T")[0] if date else "TBD"
+        final_img = TextOverlayRenderer.render(
+            img, {"title": title, "date": clean_date, "location": location}
+        )
+
+        output_dir = os.path.join(os.getcwd(), "static", "generated_posters")
+        os.makedirs(output_dir, exist_ok=True)
+        filename = f"poster_{uuid.uuid4().hex[:8]}.png"
+        path = os.path.join(output_dir, filename)
+
+        final_img.save(path, optimize=True, quality=90)
+
+        # 6. Aggressive Cleanup
+        gc.collect()
+
+        return f"/static/generated_posters/{filename}"
+
+
+# --- 5. EXPORTED FUNCTION ---
+def generate_event_poster(title, date, location, description, aesthetic="modern"):
+    # This call is now super fast after the first time because of Singleton
+    generator = PosterGenerator()
+    return generator.generate(title, date, location, description, aesthetic)

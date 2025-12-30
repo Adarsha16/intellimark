@@ -13,8 +13,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOADS_DIR = os.path.join(BASE_DIR, "..", "uploads")
 os.makedirs(os.path.join(UPLOADS_DIR, "profile_pictures"), exist_ok=True)
 
+
 # Mount uploads folder
 app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
+
+os.makedirs("static/generated_posters", exist_ok=True)
+
+# 3. Mount the "static" folder to the "/static" URL
+app.mount("/static", StaticFiles(directory="static"), name="static")
 # --- 2. AI MODEL INITIALIZATION ---
 # Load model globally (CPU mode).
 # Note: This runs once when the server starts.
