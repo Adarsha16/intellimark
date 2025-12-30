@@ -34,6 +34,17 @@ class LogOut(BaseModel):
     user_email: str
 
 
+class AdminMeOut(BaseModel):
+    id: int
+    email: str
+    role: str
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 # --- Endpoints ---
 
 
@@ -44,6 +55,11 @@ async def get_all_users(
     result = await db.execute(select(User))
     return result.scalars().all()
 
+@router.get("/me", response_model=AdminMeOut)
+async def get_current_admin_user(
+    admin: User = Depends(get_current_admin),
+):
+    return admin
 
 @router.put("/users/{user_id}/role")
 async def change_user_role(
