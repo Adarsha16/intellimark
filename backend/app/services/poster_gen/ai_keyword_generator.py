@@ -1,352 +1,161 @@
 """
 ai_keyword_generator.py
 
-Uses Claude AI to generate event-specific visual keywords for SDXL poster generation.
-Place this file alongside generate_base_sdxl.py
+Uses Google Gemini (Flash 2.5) to generate a highly descriptive
+poster background prompt for image generation (SDXL / Stable Diffusion).
 """
 
 import json
 import logging
-from typing import Optional
+import urllib.request
+import urllib.error
+
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
-def generate_visual_keywords_with_ai(event_prompt: str) -> str:
-    import os
-    import urllib.request
-    import urllib.error
+def generate_visual_prompt_with_ai(event_prompt: str) -> str:
+    """
+    Generates a detailed, descriptive poster background prompt
+    using Google Gemini.
 
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    Output is optimized for image generation models (SDXL).
+    """
+    api_key = settings.GEMINI_API_KEY
     if not api_key:
-        logger.warning("ANTHROPIC_API_KEY not set; using fallback keywords.")
-        return get_fallback_keywords(event_prompt)
+        logger.warning("GEMINI_API_KEY not set; using fallback prompt.")
+        return get_fallback_prompt(event_prompt)
 
-    system_prompt = """You are an expert at analyzing events and generating visual keywords for AI image generation.
-
-Your task: Read the event details and generate SPECIFIC visual keywords that will help create a relevant, eye-catching poster background.
-
-Rules:
-1. Focus on VISUAL elements (colors, objects, atmosphere, style)
-2. Be specific to the event type (e.g., "valorant agents with abilities" not just "gaming")
-3. Include 5-10 keywords/phrases
-4. Avoid text/typography - focus on imagery
-5. Use descriptive, vivid language
-6. Return ONLY the keywords as a comma-separated string
-"""
-
-    user_message = f"""Event details:
-{event_prompt}
-
-Generate visual keywords for this event's poster background:"""
-
-    request_data = {
-        "model": "claude-3-5-sonnet-20240620",
-        "max_tokens": 200,
-        "messages": [
-            {"role": "user", "content": f"{system_prompt}\n\n{user_message}"}
-        ],
-    }
-
-    req = urllib.request.Request(
-        "https://api.anthropic.com/v1/messages",
-        data=json.dumps(request_data).encode("utf-8"),
-        headers={
-            "Content-Type": "application/json",
-            "anthropic-version": "2023-06-01",
-            "x-api-key": api_key,
-        },
-        method="POST",
+    url = (
+        "https://generativelanguage.googleapis.com/v1/"
+        f"models/gemini-2.5-flash:generateContent?key={api_key}"
     )
 
+    system_instruction = """
+    You are an expert AI image prompt engineer specializing in event posters.
+
+    Task:
+    Generate ONE highly descriptive visual background prompt suitable for
+    professional AI image generation (SDXL / Stable Diffusion).
+
+    STRICT RULES:
+    - Describe ONLY the background visuals (no text, no typography).
+    - Focus on environment, lighting, color palette, atmosphere, mood, composition.
+    - Use cinematic, high-quality descriptive language.
+    - No bullet points, no lists.
+    - Do NOT mention words like "poster", "text", "title", or "logo".
+    - Output must be ONE paragraph, 40–80 words.
+    - Do NOT explain anything.
+    """
+
+    full_prompt = (
+        f"{system_instruction}\n\n"
+        f"Event Description:\n{event_prompt}\n\n"
+        "Generated Visual Prompt:"
+    )
+
+    request_data = {
+        "contents": [{"parts": [{"text": full_prompt}]}],
+        "generationConfig": {
+            "temperature": 0.7,
+            "maxOutputTokens": 200,
+        },
+    }
+
     try:
-        with urllib.request.urlopen(req, timeout=20) as response:
+        req = urllib.request.Request(
+            url=url,
+            data=json.dumps(request_data).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+
+        with urllib.request.urlopen(req, timeout=12) as response:
             result = json.loads(response.read().decode("utf-8"))
 
-        # Anthropic responses usually look like: {"content":[{"type":"text","text":"..."}], ...}
-        if isinstance(result, dict) and "content" in result and result["content"]:
-            keywords = result["content"][0].get("text", "").strip()
-            if keywords:
-                logger.info(f"AI generated keywords: {keywords}")
-                return keywords
+        candidates = result.get("candidates", [])
+        if candidates:
+            parts = candidates[0].get("content", {}).get("parts", [])
+            if parts and "text" in parts[0]:
+                prompt = parts[0]["text"].strip()
+                prompt = " ".join(prompt.split())  # normalize spacing
 
-        logger.warning("No usable content in AI response; using fallback.")
-        return get_fallback_keywords(event_prompt)
+                if len(prompt.split()) >= 15:
+                    logger.info("🎨 Gemini Visual Prompt Generated")
+                    return prompt
+
+        logger.warning("Gemini returned weak prompt; using fallback.")
+        return get_fallback_prompt(event_prompt)
 
     except urllib.error.HTTPError as e:
-        # Read body for debugging (may include message)
-        try:
-            body = e.read().decode("utf-8", errors="ignore")
-        except Exception:
-            body = ""
-        logger.error(f"Anthropic API HTTPError {e.code}: {e.reason}. {body[:200]}")
-        return get_fallback_keywords(event_prompt)
-
-    except urllib.error.URLError as e:
-        logger.error(f"Network error calling AI API: {e}")
-        return get_fallback_keywords(event_prompt)
-
+        logger.error(f"Gemini API Error {e.code}: {e.reason}")
+        return get_fallback_prompt(event_prompt)
     except Exception as e:
-        logger.error(f"AI keyword generation failed: {e}")
-        return get_fallback_keywords(event_prompt)
+        logger.error(f"AI Prompt Generation Failed: {e}")
+        return get_fallback_prompt(event_prompt)
 
 
-
-def get_fallback_keywords(event_prompt: str) -> str:
+def get_fallback_prompt(event_prompt: str) -> str:
     """
-    Fallback keyword generator using simple pattern matching.
-    Used when AI API fails.
+    High-quality fallback prompts mapped to common event types.
     """
-    prompt_lower = event_prompt.lower()
-    
-    keyword_patterns = {
+    p = event_prompt.lower()
 
-        # =========================
-        # GAMING / ESPORTS
-        # =========================
-        "valorant": (
-            "valorant tactical agents, neon red and cyan lighting, futuristic weapons, "
-            "radianite energy effects, cyberpunk combat arena, dramatic esports lighting"
-        ),
-        "csgo": (
-            "counter-strike tactical operators, realistic weapons, urban combat zones, "
-            "green and orange accents, competitive esports atmosphere"
-        ),
-        "counter strike": (
-            "tactical shooter environment, realistic military gear, smoke grenades, "
-            "urban maps, competitive lighting"
-        ),
-        "league of legends": (
-            "league champions, summoner's rift environment, magical abilities, "
-            "fantasy energy effects, blue and gold color palette"
-        ),
-        "dota": (
-            "dota heroes, ancient battlefield, mystical abilities, "
-            "dark fantasy lighting, epic magical effects"
-        ),
-        "fortnite": (
-            "fortnite battle royale island, building structures, vibrant cartoon colors, "
-            "storm effects, dynamic action"
-        ),
-        "pubg": (
-            "battle royale combat zone, military gear, realistic terrain, "
-            "smoke and explosion effects, cinematic lighting"
-        ),
-        "apex": (
-            "apex legends characters, futuristic arena, sci-fi abilities, "
-            "dynamic motion blur, high energy combat visuals"
+    fallback_map = {
+        # --- ESPORTS & GAMING ---
+        "clash": (
+            "A vibrant fantasy battlefield environment with colorful medieval elements, "
+            "towering castle structures in the distance, dynamic lighting, soft clouds of "
+            "dust and magic particles in the air, rich saturated colors, energetic and playful "
+            "atmosphere, high detail, cinematic wide angle"
         ),
         "gaming": (
-            "gaming setup environment, RGB lighting, neon accents, "
-            "esports arena, high contrast futuristic aesthetic"
+            "A futuristic esports arena filled with glowing RGB lighting, neon accents, "
+            "massive digital screens, dramatic spotlights cutting through atmospheric haze, "
+            "crowd silhouettes, high contrast, cyberpunk inspired, ultra detailed"
         ),
-        "esports": (
-            "esports tournament stage, massive LED screens, "
-            "stadium lighting, competitive crowd atmosphere"
-        ),
-
-        # =========================
-        # TECH / AI / ENGINEERING
-        # =========================
-        "tech": (
-            "futuristic technology visuals, glowing circuit boards, "
-            "holographic interfaces, blue and cyan lighting, sleek modern design"
+        # --- TECH ---
+        "hackathon": (
+            "A dark futuristic tech environment with glowing green data streams, floating "
+            "holographic interfaces, multiple monitors illuminating the scene, cyberpunk city "
+            "elements, moody lighting, high detail, cinematic perspective"
         ),
         "ai": (
-            "artificial intelligence visuals, neural network patterns, "
-            "data streams, blue purple gradients, futuristic computation"
+            "An abstract futuristic environment featuring glowing neural networks, flowing "
+            "blue data streams, soft volumetric lighting, advanced technology aesthetics, "
+            "clean and modern atmosphere, ultra detailed, sci-fi inspired"
         ),
-        "machine learning": (
-            "abstract neural networks, flowing data pipelines, "
-            "algorithmic visuals, modern AI aesthetic"
-        ),
-        "blockchain": (
-            "digital blockchain networks, glowing nodes, "
-            "cryptographic patterns, futuristic finance visuals"
-        ),
-        "cybersecurity": (
-            "cyber security interface, digital locks, glowing shields, "
-            "matrix-style data streams, dark tech aesthetic"
-        ),
-        "robotics": (
-            "robotic systems, mechanical arms, futuristic labs, "
-            "industrial automation visuals, clean sci-fi lighting"
-        ),
-        "hackathon": (
-            "coding environment, multiple monitors, glowing code screens, "
-            "collaborative workspace, innovation-focused tech aesthetic"
-        ),
-
-        # =========================
-        # BUSINESS / CORPORATE
-        # =========================
-        "business": (
-            "modern corporate environment, professional lighting, "
-            "blue and grey tones, clean geometric composition"
-        ),
-        "conference": (
-            "conference hall interior, presentation screens, "
-            "professional networking atmosphere, modern architecture"
-        ),
-        "startup": (
-            "startup workspace, modern office design, "
-            "innovation-driven environment, clean tech aesthetic"
-        ),
-        "entrepreneurship": (
-            "business growth visuals, upward motion, "
-            "modern professional atmosphere, success-oriented design"
-        ),
-        "finance": (
-            "financial data visualizations, stock market graphs, "
-            "dark blue tones, professional corporate lighting"
-        ),
-        "marketing": (
-            "digital marketing visuals, social media icons abstraction, "
-            "bright modern colors, creative business aesthetic"
-        ),
-
-        # =========================
-        # MUSIC / ENTERTAINMENT
-        # =========================
-        "music": (
-            "concert stage lighting, colorful spotlights, "
-            "sound wave visualizations, energetic festival atmosphere"
-        ),
+        # --- MUSIC ---
         "concert": (
-            "live concert stage, dramatic lighting beams, "
-            "crowd silhouettes, vibrant performance energy"
+            "A large concert stage environment with dramatic lighting beams, colorful lasers, "
+            "smoke-filled atmosphere, energetic crowd silhouettes, vibrant colors, dynamic "
+            "composition, high contrast, cinematic live performance feel"
         ),
-        "dj": (
-            "dj stage setup, neon lights, electronic music vibe, "
-            "dynamic motion lighting"
-        ),
-        "festival": (
-            "outdoor festival atmosphere, colorful lights, "
-            "crowd energy, celebratory visuals"
-        ),
-        "dance": (
-            "dynamic dance motion, colorful lighting, "
-            "energetic movement, expressive atmosphere"
-        ),
-
-        # =========================
-        # SPORTS / FITNESS
-        # =========================
-        "sports": (
-            "athletic silhouettes in motion, stadium lighting, "
-            "dynamic action visuals, high energy atmosphere"
-        ),
-        "football": (
-            "football stadium, dramatic floodlights, "
-            "athletes in motion, competitive sports energy"
-        ),
-        "basketball": (
-            "basketball court lighting, dynamic jump shots, "
-            "arena atmosphere, bold sports visuals"
-        ),
-        "cricket": (
-            "cricket stadium, pitch lighting, "
-            "athletic motion, professional sports atmosphere"
-        ),
-        "marathon": (
-            "runners in motion, urban race environment, "
-            "sunrise lighting, endurance sports aesthetic"
-        ),
-        "fitness": (
-            "fitness training visuals, muscular silhouettes, "
-            "high contrast lighting, motivational energy"
-        ),
-
-        # =========================
-        # ART / CULTURE / EDUCATION
-        # =========================
-        "art": (
-            "abstract artistic patterns, creative brushstrokes, "
-            "gallery lighting, modern art aesthetic"
-        ),
-        "exhibition": (
-            "art gallery space, clean white lighting, "
-            "minimalist artistic composition"
-        ),
-        "workshop": (
-            "hands-on learning environment, creative workspace, "
-            "tools and materials, collaborative atmosphere"
-        ),
-        "education": (
-            "modern learning environment, knowledge growth visuals, "
-            "clean academic aesthetic"
-        ),
-        "seminar": (
-            "educational seminar hall, professional lighting, "
-            "focused learning atmosphere"
-        ),
-
-        # =========================
-        # SOCIAL / COMMUNITY
-        # =========================
-        "community": (
-            "diverse group silhouettes, warm lighting, "
-            "inclusive atmosphere, positive social energy"
-        ),
-        "networking": (
-            "professional networking visuals, abstract human connections, "
-            "clean modern environment"
-        ),
-        "charity": (
-            "uplifting atmosphere, warm color palette, "
-            "hopeful community-focused visuals"
-        ),
-
-        # =========================
-        # DEFAULT
-        # =========================
-        "default": (
-            "modern event poster background, smooth gradients, "
-            "abstract shapes, professional lighting, premium digital art"
+        # --- BUSINESS ---
+        "business": (
+            "A modern professional environment with sleek glass architecture, soft ambient "
+            "lighting, abstract geometric shapes, cool blue and white color palette, clean "
+            "minimalist design, premium corporate atmosphere"
         ),
     }
 
-    
-    # Find matching patterns
-    for pattern, keywords in keyword_patterns.items():
-        if pattern in prompt_lower:
-            logger.info(f"Using fallback keywords for '{pattern}'")
-            return keywords
-    
-    # Default fallback
-    logger.info("Using default fallback keywords")
-    return "dynamic event aesthetic, energetic atmosphere, modern design, vibrant colors, professional quality"
+    for key, value in fallback_map.items():
+        if key in p:
+            logger.info(f"Using fallback prompt for: {key}")
+            return value
 
-
-def test_keyword_generator():
-    """Test the keyword generator with sample events."""
-    test_events = [
-        """Title: Valorant Champions 2024
-Subtitle: Winter Invitational
-Date: December 20-22, 2024
-Location: Tokyo Game Arena""",
-        
-        """Title: AI & Machine Learning Summit
-Date: March 15, 2025
-Theme: Future of AI
-Location: San Francisco Convention Center""",
-        
-        """Title: Summer Music Festival
-Date: July 4-6, 2025
-Theme: Electronic Dance Music
-Location: Desert Oasis""",
-    ]
-    
-    print("Testing AI Keyword Generator\n" + "="*50)
-    
-    for i, event in enumerate(test_events, 1):
-        print(f"\nTest {i}:")
-        print(f"Event: {event[:50]}...")
-        keywords = generate_visual_keywords_with_ai(event)
-        print(f"Keywords: {keywords}")
-        print("-"*50)
+    logger.info("Using generic fallback prompt.")
+    return (
+        "A modern abstract environment with smooth gradient lighting, soft shadows, "
+        "clean geometric forms, balanced composition, professional and premium atmosphere, "
+        "high detail, cinematic quality"
+    )
 
 
 if __name__ == "__main__":
-    # Run tests
-    test_keyword_generator()
+    print("Testing Descriptive Poster Prompt Generation...\n")
+    test_prompt = "Clash Royale Tournament. Mobile esports battle."
+    print("Event:", test_prompt)
+    print("\nGenerated Prompt:\n")
+    print(generate_visual_prompt_with_ai(test_prompt))
