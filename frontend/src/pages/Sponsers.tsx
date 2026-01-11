@@ -208,7 +208,7 @@ export default function Sponsors() {
                                             <FileText className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
                                             <p className="text-xs text-slate-600 italic leading-relaxed line-clamp-3">
                                                 "{sponsor.notes}"
-                                            </p>
+                               </p>
                                         </div>
                                     )}
                                 </div>
