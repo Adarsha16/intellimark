@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Events from './pages/Events';
 import Profile from './pages/Profile';
+import Groups from './pages/Groups';
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -31,6 +32,7 @@ function App() {
               <Route path="events" element={<Events />} />
               <Route path="settings" element={<Settings />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="groups" element={<Groups />} />
 
             </Route>
           </Routes>

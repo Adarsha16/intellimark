@@ -11,6 +11,8 @@ import {
     ChevronDown,
     Sparkles,
     Calendar,
+    UserIcon,
+    Handshake
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
@@ -35,9 +37,10 @@ const Layout = () => {
     const navItems = [
         { name: 'Dashboard', path: '/', icon: LayoutDashboard },
         { name: 'Events', path: '/events', icon: Calendar },
-        { name: 'Sponsors', path: '/sponsors', icon: Users },
+        { name: 'Sponsors', path: '/sponsors', icon: Handshake },
         { name: 'Settings', path: '/settings', icon: Settings },
         { name: 'Profile', path: '/profile', icon: Users },
+        { name: 'Groups', path: '/groups', icon: UserIcon },
     ];
 
     // ✅ Fetch CURRENT admin
@@ -144,7 +147,6 @@ const Layout = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Bell className="w-5 h-5 text-gray-400" />
 
                         <Menu as="div" className="relative">
                             <Menu.Button className="flex items-center gap-2 text-sm font-semibold">
