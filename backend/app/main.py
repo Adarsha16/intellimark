@@ -26,7 +26,12 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Note: This runs once when the server starts.
 
 # CORS Setup (Allow Frontend)
-origins = ["http://localhost:5173"]  # Vite default port
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://localhost:3000", # Just in case
+]  
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

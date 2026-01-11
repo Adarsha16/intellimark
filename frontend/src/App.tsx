@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { EventsProvider } from './context/EventsContext';
 import { type ReactNode } from 'react';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -19,19 +20,21 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+        <EventsProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route index element={<Dashboard />} />
-            <Route path="sponsors" element={<Sponsors />} />
-            <Route path="events" element={<Events />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="profile" element={<Profile />} />
+            <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route index element={<Dashboard />} />
+              <Route path="sponsors" element={<Sponsors />} />
+              <Route path="events" element={<Events />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="profile" element={<Profile />} />
 
-          </Route>
-        </Routes>
+            </Route>
+          </Routes>
+        </EventsProvider>
       </AuthProvider>
     </BrowserRouter >
   );

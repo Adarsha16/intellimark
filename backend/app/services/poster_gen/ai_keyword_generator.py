@@ -2,7 +2,7 @@ import json
 import logging
 import time
 import random
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Tuple
 from dataclasses import dataclass
 from enum import Enum
 import urllib.request
@@ -18,9 +18,10 @@ logger = logging.getLogger(__name__)
 class ModelVersion(str, Enum):
     """Supported Gemini model versions."""
 
+    FLASH_3_0 = "gemini-3-flash-preview"
+    PRO_3_0 = "gemini-3-pro-preview"
     FLASH_2_5 = "gemini-2.5-flash"
-    FLASH_1_5 = "gemini-1.5-flash"
-    PRO = "gemini-1.5-pro"
+    PRO_2_5 = "gemini-2.5-pro"
 
 
 @dataclass
@@ -28,7 +29,7 @@ class GenerationConfig:
     """Configuration for AI generation."""
 
     temperature: float = 0.7
-    max_output_tokens: int = 200
+    max_output_tokens: int = 1024  # Increased for JSON response
     top_p: float = 0.95
     top_k: int = 40
 
@@ -36,9 +37,9 @@ class GenerationConfig:
 @dataclass
 class PromptResult:
     """Structured result of prompt generation."""
-
     success: bool
     prompt: str
+    design_style: Dict[str, Any]  # New field for design specs
     model_used: str
     generation_time_ms: float
     error: Optional[str] = None
@@ -52,24 +53,44 @@ class AIPromptGenerator:
     """
 
     # Model priority list (fallback if primary fails)
-    MODEL_PRIORITY = [ModelVersion.FLASH_2_5, ModelVersion.FLASH_1_5, ModelVersion.PRO]
+    # We try 3.0 (Preview), then 2.5 (Pro/Flash). 2.5 Flash is most likely to succeed.
+    MODEL_PRIORITY = [
+        ModelVersion.FLASH_3_0, 
+        ModelVersion.PRO_3_0, 
+        ModelVersion.PRO_2_5, 
+        ModelVersion.FLASH_2_5
+    ]
 
     # Default generation configuration
     DEFAULT_CONFIG = GenerationConfig()
 
     # System instruction template
     SYSTEM_INSTRUCTION = """
-    You are an expert AI image prompt engineer specializing in event posters.
-    Task: Generate ONE highly descriptive visual background prompt for SDXL/Stable Diffusion.
+    You are an expert AI Art Director and Prompt Engineer for event posters.
     
-    STRICT RULES:
-    - Describe ONLY the background visuals (no text, no typography).
-    - Focus on lighting, color palette, atmosphere, mood, composition.
-    - Use cinematic, high-quality descriptive language.
-    - Output must be ONE paragraph, 40-80 words.
-    - Do NOT mention words like "poster", "text", "title", or "logo".
-    - Avoid describing people or faces unless specifically requested.
-    - Ensure the prompt is self-contained and doesn't reference the event description.
+    Task: Return a JSON object containing:
+    1. "visual_prompt": A highly descriptive SDXL background prompt (NO text in image).
+    2. "design_style": A text overlay style specification.
+
+    JSON SCHEMA:
+    {
+        "visual_prompt": "string (50-70 words). CRITICAL: If the event title mentions a specific game (e.g. Valorant, Minecraft), movie, or cultural theme, you MUST describe specific visual elements known from that IP (e.g. 'floating blue radianite crystals, sharp anime aesthetic, tactical agents' for Valorant). DO NOT be generic. Describe costumes, environments, and lighting specific to the topic.",
+        "design_style": {
+            "theme": "string (e.g. 'Cyberpunk', 'Elegant', 'Minimalist', 'Grunge', 'Retro')",
+            "primary_color": "hex string (e.g. '#00FF00')",
+            "secondary_color": "hex string (e.g. '#111111')",
+            "font_style": "string (options: 'Modern', 'Serif', 'Tech', 'Handwritten', 'Bold')",
+            "layout": "string (options: 'Center', 'Bottom', 'TopLeft')"
+        }
+    }
+
+    RULES:
+    - Output MUST be valid JSON.
+    - "visual_prompt" must NOT mention words like "poster", "text", or "logo".
+    - "theme" should match the event type (e.g., Gaming -> 'Tech'/'Cyberpunk', Gala -> 'Elegant').
+    - Colors should possess high contrast for readability.
+    - LAYOUT: Use 'TopLeft' for Tech, Gaming, and Modern events. Use 'Center' for Galas and Formal events.
+    - BE BOLD. Avoid phrases like 'a generic representation'. Use specific artistic terms (e.g. 'Unreal Engine 5 render', 'Oil painting', 'Pixel art').
     """
 
     def __init__(self, api_key: Optional[str] = None):
@@ -123,15 +144,8 @@ class AIPromptGenerator:
         # Validate input
         if not event_prompt or not event_prompt.strip():
             logger.warning("Empty event prompt provided")
-            fallback = self._get_fallback_prompt("generic event")
-            return PromptResult(
-                success=False,
-                prompt=fallback,
-                model_used="fallback",
-                generation_time_ms=time.time() - start_time,
-                error="Empty event prompt",
-                fallback_used=True,
-            )
+            fallback = self._get_fallback_result("generic event")
+            return fallback
 
         # Check API key
         if not self.api_key:
@@ -196,20 +210,42 @@ class AIPromptGenerator:
         """
         for attempt in range(self.max_retries):
             try:
-                prompt = self._call_gemini_api(model_version, event_prompt, attempt)
-                if prompt and len(prompt) > 20:
-                    return PromptResult(
-                        success=True,
-                        prompt=prompt,
-                        model_used=model_version.value,
-                        generation_time_ms=0,  # Will be filled by parent
-                        error=None,
-                        fallback_used=False,
-                    )
+                result_json = self._call_gemini_api(model_version, event_prompt, attempt)
+                
+                # Parse and validate JSON
+                try:
+                    data = json.loads(result_json)
+                    visual_prompt = data.get("visual_prompt", "")
+                    design_style = data.get("design_style", {})
+                    
+                    if visual_prompt and len(visual_prompt) > 10:
+                        return PromptResult(
+                            success=True,
+                            prompt=visual_prompt,
+                            design_style=design_style,
+                            model_used=model_version.value,
+                            generation_time_ms=0,
+                            error=None,
+                            fallback_used=False,
+                        )
+                except json.JSONDecodeError as e:
+                    logger.warning(f"JSON Parse Failed: {e}. Raw: {result_json[:100]}...")
+                    # If model returned plain text instead of JSON, treat as prompt with default style
+                    if len(result_json) > 10:
+                        return PromptResult(
+                            success=True,
+                            prompt=result_json,
+                            design_style=self._get_default_style(),
+                            model_used=f"{model_version.value} (raw_text)",
+                            generation_time_ms=0,
+                            error=f"JSON Decode Failed: {str(e)}",
+                            fallback_used=False,
+                        )
+
             except Exception as e:
-                logger.warning(
-                    f"Attempt {attempt + 1} failed for model {model_version.value}: {str(e)[:100]}"
-                )
+                msg = f"Attempt {attempt + 1} failed for model {model_version.value}: {str(e)[:100]}"
+                logger.warning(msg)
+                print(f"⚠️ [AI WARNING] {msg}")
 
                 # Exponential backoff with jitter
                 if attempt < self.max_retries - 1:
@@ -219,6 +255,7 @@ class AIPromptGenerator:
         return PromptResult(
             success=False,
             prompt="",
+            design_style={},
             model_used=model_version.value,
             generation_time_ms=0,
             error="All retries exhausted",
@@ -326,6 +363,17 @@ class AIPromptGenerator:
             logger.error(
                 f"HTTP error {e.code} for model {model_version.value}: {e.reason}"
             )
+            print(f"❌ [AI ERROR] HTTP {e.code}: {e.reason}")
+            try:
+                # Try to print the detailed error body
+                print(f"   Body: {e.read().decode('utf-8')}")
+            except:
+                pass
+            
+            # Special handling for 403/Forbidden (leaked key)
+            if e.code == 403:
+                raise ValueError("API Key Valid/Quota Issue")
+                
             raise
         except urllib.error.URLError as e:
             logger.error(f"URL error for model {model_version.value}: {e.reason}")
@@ -367,18 +415,52 @@ class AIPromptGenerator:
         if cleaned and cleaned[0].islower():
             cleaned = cleaned[0].upper() + cleaned[1:]
 
+        # Extract JSON if wrapped in markdown code blocks
+        if "```json" in cleaned:
+            parts = cleaned.split("```json")
+            if len(parts) > 1:
+                cleaned = parts[1].split("```")[0].strip()
+        elif "```" in cleaned:
+             parts = cleaned.split("```")
+             if len(parts) > 1:
+                cleaned = parts[1].strip()
+
         return cleaned
 
-    def _get_fallback_prompt(self, event_prompt: str) -> str:
-        """
-        Get a fallback prompt based on event keywords.
+    def _get_default_style(self) -> Dict[str, Any]:
+        return {
+            "theme": "Modern",
+            "primary_color": "#FFFFFF",
+            "secondary_color": "#000000",
+            "font_style": "Modern",
+            "layout": "Center"
+        }
 
-        Args:
-            event_prompt: Event description
+    def _get_fallback_result(self, event_prompt: str) -> PromptResult:
+        """Get fallback prompt with appropriate style."""
+        prompt, style_hint = self._get_fallback_data(event_prompt)
+        
+        style = self._get_default_style()
+        # Simple mapping from hint to style
+        if style_hint == "tech":
+            style.update({"theme": "Cyberpunk", "primary_color": "#00FFCC", "font_style": "Tech", "layout": "TopLeft"})
+        elif style_hint == "nature":
+            style.update({"theme": "Organic", "primary_color": "#F0FFF0", "font_style": "Serif", "layout": "Center"})
+        elif style_hint == "gaming":
+            style.update({"theme": "Gaming", "primary_color": "#FF0055", "font_style": "Bold", "layout": "TopLeft"})
 
-        Returns:
-            Fallback prompt
-        """
+        return PromptResult(
+            success=False,
+            prompt=prompt,
+            design_style=style,
+            model_used="fallback",
+            generation_time_ms=0,
+            error="Triggered Fallback",
+            fallback_used=True
+        )
+
+    def _get_fallback_data(self, event_prompt: str) -> Tuple[str, str]:
+        """Returns (prompt, style_hint)"""
         p = event_prompt.lower()
 
         # Predefined fallback prompts with weights
@@ -396,6 +478,7 @@ class AIPromptGenerator:
                 ],
                 "A vibrant fantasy battlefield with medieval castle elements, dynamic lighting, "
                 "soft dust clouds, rich saturated colors, energetic atmosphere, cinematic wide angle",
+                "gaming"
             ),
             # Tech/AI
             (
@@ -406,21 +489,25 @@ class AIPromptGenerator:
                     "machine learning",
                     "programming",
                     "coding",
+                    "robotics",
                 ],
                 "A dark futuristic tech environment with glowing green data streams, "
                 "floating holographic interfaces, moody lighting, cinematic perspective",
+                "tech"
             ),
             # Music/Concerts
             (
                 ["music", "concert", "festival", "dj", "band", "performance"],
                 "A large concert stage environment with dramatic lighting beams, "
                 "colorful lasers, smoke-filled atmosphere, vibrant colors, dynamic composition",
+                "modern"
             ),
             # Nature/Environment
             (
                 ["nature", "eco", "environment", "sustainability", "green", "outdoor"],
                 "Lush botanical garden environment, sunlight filtering through leaves, "
                 "organic textures, soft green palette, high detail nature photography",
+                "nature"
             ),
             # Business/Conference
             (
@@ -434,24 +521,32 @@ class AIPromptGenerator:
                 ],
                 "Modern minimalist architecture with clean lines, soft ambient lighting, "
                 "geometric shapes, neutral color palette, professional atmosphere",
+                "modern"
             ),
             # Art/Creative
             (
                 ["art", "creative", "design", "painting", "exhibition", "gallery"],
                 "Abstract artistic environment with flowing colors, organic shapes, "
                 "creative chaos, imaginative lighting, surreal atmosphere",
+                "modern"
             ),
         ]
 
-        for keywords, prompt in fallbacks:
+        for keywords, prompt, hint in fallbacks:
             if any(keyword in p for keyword in keywords):
-                return prompt
+                return prompt, hint
 
         # Default fallback
         return (
             "A modern abstract environment with smooth gradient lighting, "
-            "soft shadows, clean geometric forms, professional premium atmosphere, high detail"
+            "soft shadows, clean geometric forms, professional premium atmosphere, high detail",
+            "modern"
         )
+
+    def _get_fallback_prompt(self, event_prompt: str) -> str:
+        """Wrapper for backward compatibility"""
+        prompt, _ = self._get_fallback_data(event_prompt)
+        return prompt
 
     def _log_generation_metrics(self, result: PromptResult, generation_time_ms: float):
         """
@@ -540,7 +635,15 @@ def generate_visual_prompt_with_ai(event_prompt: str) -> str:
     """
     generator = get_generator()
     result = generator.generate_visual_prompt(event_prompt)
+    
+    # Return JUST the prompt string for backward compatibility with simple callers
+    # But ideally callers should use the full object
     return result.prompt
+
+def generate_visual_design_with_ai(event_prompt: str) -> PromptResult:
+    """Returns the full result including design_style."""
+    generator = get_generator()
+    return generator.generate_visual_prompt(event_prompt)
 
 
 # Export for backward compatibility

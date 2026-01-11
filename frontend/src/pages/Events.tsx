@@ -14,7 +14,7 @@ import SponsorModal from '../components/events/SponsorModal';
 
 export default function EventsPage() {
     // 1. Get Logic from Hook
-    const { events, loading, generatingIds, createEvent, updateEvent, deleteEvent, generatePoster, findSponsors } = useEvents();
+    const { events, loading, generatingTasks, createEvent, updateEvent, deleteEvent, generatePoster, findSponsors } = useEvents();
 
     // 2. Local View State (Modals)
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -78,7 +78,7 @@ export default function EventsPage() {
                             <EventCard
                                 key={event.id}
                                 event={event}
-                                isGenerating={generatingIds.has(event.id)}
+                                generationStartTime={generatingTasks[event.id]}
                                 onEdit={handleOpenEdit}
                                 onDelete={deleteEvent}
                                 onGeneratePoster={generatePoster}
@@ -100,7 +100,9 @@ export default function EventsPage() {
                     description: editingEvent.description,
                     location: editingEvent.location,
                     date: editingEvent.date,
-                    capacity: editingEvent.capacity
+                    capacity: editingEvent.capacity,
+                    prize_pool: editingEvent.prize_pool,
+                    organizer_name: editingEvent.organizer_name
                 } : undefined}
             />
 

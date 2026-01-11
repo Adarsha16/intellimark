@@ -20,6 +20,10 @@ class Event(Base):
     date = Column(DateTime(timezone=True), nullable=False)
     capacity = Column(Integer, default=0)
     status = Column(String, default=EventStatus.DRAFT)
+    
+    # Official Fields
+    prize_pool = Column(String, nullable=True) # e.g. "$10,000"
+    organizer_name = Column(String, nullable=True) # e.g. "IntelliMark Gaming"
 
     # For AI Marketing Strategy (Stored as JSON string or simple text for now)
     marketing_strategy = Column(Text, nullable=True)
