@@ -8,6 +8,7 @@ from datetime import datetime
 from app.db.session import get_db
 from app.models.user import User
 from app.models.admin import ActivityLog
+from app.services.strategy_agent import generate_club_strategy
 from app.api.deps import get_current_admin
 from app.core.logger import log_activity
 
@@ -55,11 +56,13 @@ async def get_all_users(
     result = await db.execute(select(User))
     return result.scalars().all()
 
+
 @router.get("/me", response_model=AdminMeOut)
 async def get_current_admin_user(
     admin: User = Depends(get_current_admin),
 ):
     return admin
+
 
 @router.put("/users/{user_id}/role")
 async def change_user_role(
@@ -108,6 +111,17 @@ async def get_system_logs(
             )
         )
     return logs
+
+
+@router.post("/generate-strategy")
+async def get_ai_strategy_report(
+    db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)
+):
+    """
+    Analyzes club data (Events + Sponsors) to produce a strategic roadmap.
+    """
+    report = await generate_club_strategy(db)
+    return {"report": report}
 
 
 @router.post("/backup")
