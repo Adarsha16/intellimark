@@ -9,6 +9,8 @@ export interface Event {
     marketing_strategy?: string;
     prize_pool?: string;
     organizer_name?: string;
+    latitude?: number;
+    longitude?: number;
 }
 
 export interface SponsorMatch {
@@ -27,4 +29,6 @@ export interface EventFormData {
     capacity: number;
     prize_pool?: string;
     organizer_name?: string;
+    latitude?: number;
+    longitude?: number;
 }

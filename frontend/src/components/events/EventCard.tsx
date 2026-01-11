@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Calendar, MapPin, Pencil, Trash2, Image as ImageIcon, Loader2, Handshake, Users, Banknote, Building2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, MapPin, Pencil, Trash2, Image as ImageIcon, Loader2, Handshake, Users, Banknote, Building2, Navigation, Map as MapIcon } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { motion } from 'framer-motion';
@@ -17,6 +18,7 @@ interface EventCardProps {
 const API_BASE_URL = 'http://localhost:8000';
 
 export default function EventCard({ event, generationStartTime, onEdit, onDelete, onGeneratePoster, onMatch }: EventCardProps) {
+    const navigate = useNavigate();
     const [progress, setProgress] = useState(0);
     const [statusText, setStatusText] = useState("Initializing...");
 
@@ -147,7 +149,30 @@ export default function EventCard({ event, generationStartTime, onEdit, onDelete
                 </div>
             </div>
 
-            <div className="p-4 bg-slate-50 border-t border-slate-100">
+            <div className="p-4 bg-slate-50 border-t border-slate-100 space-y-2">
+                {/* AR / Map Actions */}
+                {(event.latitude && event.longitude) ? (
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button
+                            variant="outline"
+                            className="bg-white text-xs h-8 gap-1"
+                            onClick={() => navigate(`/distance-map?lat=${event.latitude}&lng=${event.longitude}&title=${event.title}`)}
+                        >
+                            <MapIcon className="w-3 h-3" /> Map Path
+                        </Button>
+                        <Button
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8 gap-1"
+                            onClick={() => navigate(`/ar-view?lat=${event.latitude}&lng=${event.longitude}&title=${event.title}`)}
+                        >
+                            <Navigation className="w-3 h-3" /> AR Nav
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="text-[10px] text-center text-slate-400 py-1">
+                        No GPS coordinates set
+                    </div>
+                )}
+
                 <Button className="w-full gap-2 bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white" onClick={() => onMatch(event)}>
                     <Handshake className="w-4 h-4" /> Find Sponsors (AI)
                 </Button>

@@ -243,9 +243,22 @@ class TextOverlayRenderer:
             draw, info["title"].upper(), title_font_path, int(W * 0.65), int(H * 0.35), int(W * 0.18)
         )
         title_y = int(H * 0.12)
+        
         TextOverlayRenderer.draw_cinematic_text(
             draw, margin_x, title_y, wrapped_title, font_title, color=primary, align="left", anchor="la"
         )
+
+        # 2. Prize (Below Title)
+        next_y = title_y + title_h + 30
+        prize_h = 0
+        if info.get("prize"):
+             prize_font = TextOverlayRenderer.load_font(meta_font_path, int(W * 0.05))
+             bbox_prize = draw.textbbox((0,0), f"{info['prize']}", font=prize_font)
+             prize_h = bbox_prize[3] - bbox_prize[1]
+             TextOverlayRenderer.draw_cinematic_text(
+                draw, margin_x, next_y, f"{info['prize']}", prize_font, color="#FFD700", align="left", anchor="la"
+            )
+             next_y += prize_h + 20
 
         # 2. Prize (Below Title)
         next_y = title_y + title_h + 30
@@ -414,7 +427,7 @@ class TextOverlayRenderer:
 class PromptEngineer:
     @classmethod
     def build_prompt(
-        cls, title: str, aesthetic: str, ai_description: str = "", style_data: Dict[str, str] = None
+        cls, title: str, aesthetic: str, ai_description: str = "", style_data: Dict[str, str] = None, cfg=None
     ) -> Tuple[str, str]:
         # 1. Define Style Presets (The "Secret Sauce")
         # UPDATED: Removed strong nouns (like 'city', 'stadium') to prevent overriding the AI's specific subject.
@@ -426,11 +439,18 @@ class PromptEngineer:
             "Retro": "vintage 80s poster style, cassette futurism, washed out warm colors, stranger things aesthetic, detailed, cinematic lighting",
             "Organic": "botanical illustration style, paper texture, soft shadows, sustainable aesthetic, nature photography style, earth tones, hyperrealistic",
             "Grunge": "street art style, paint splatter effect, riot aesthetic, raw energy, underground vibe, detailed texture",
-            "Gaming": "unreal engine 5 render, dynamic action angle, vibrant energy, 3d digital art, ray tracing, high fidelity, sharp detailing"
+            "Gaming": "unreal engine 5 render, dynamic action angle, vibrant energy, 3d digital art, ray tracing, high fidelity, sharp detailing",
+            "Cartoon": "ligne claire style, flat vector illustration, thick black outlines, bold colors, comic book art, clean crisp lines, no noise, no shading, minimal"
         }
 
         # 2. Determine Style Keywords
-        theme = style_data.get("theme", "Modern") if style_data else "Modern"
+        # Auto-detect "Cartoony" requirement for Gaming/Hackathons/Tech (Fixes graininess)
+        check_title = title.lower()
+        if any(x in check_title for x in ["hackathon", "valorant", "gaming", "esports", "pubg", "fortnite", "minecraft", "roblox", "tournament", "coding", "dev", "code"]):
+            theme = "Cartoon"
+        else:
+            theme = style_data.get("theme", "Modern") if style_data else "Modern"
+            
         style_keywords = STYLE_PRESETS.get(theme, STYLE_PRESETS["Modern"])
 
         # 3. Build Negative Prompt
@@ -443,7 +463,35 @@ class PromptEngineer:
         )
 
         # 4. Build Positive Prompt
-        if ai_description and len(ai_description) > 15:
+        # 4. Build Positive Prompt
+        # [AGGRESSIVE OVERRIDE FOR CARTOON]
+        check_title = title.lower()
+        if theme == "Cartoon" or any(x in check_title for x in ["hackathon", "valorant", "gaming", "esports"]):
+             # "Lying to the AI" Strategy:
+             # Using "Hackathon" triggers circuit board mess.
+             # Using "Technology Icon" triggers clean minimalism.
+             subject_map = {
+                 "hackathon": "orange laptop",
+                 "valorant": "blue futuristic gun", 
+                 "gaming": "game controller",
+                 "esports": "trophy"
+             }
+             subject = "technology object"
+             for k, v in subject_map.items():
+                 if k in check_title: subject = v
+                 
+             positive = (
+                 f"isometric vector art of a {subject}, {style_keywords}, "
+                 "single object, centered, vast white background, solid background, clean lines, behance, correct geometry, straight lines"
+             )
+             # Force clean background in negative
+             negative += ", (background pattern:1.5), (crowd:1.5), (cluttered:1.5), (many objects:1.5), (highly detailed:1.5), (wallpaper:1.5), (text:1.5), (distorted:2.0), (warped:2.0), (melted:2.0)"
+             
+             # [IMPORTANT] Force higher quality for geometry stability
+             cfg.steps = 3 
+             cfg.guidance = 1.0
+             
+        elif ai_description and len(ai_description) > 15:
             # Combined: AI Description + Enforced Style + Quality Boosters
             # Added ( :1.2) weight to subject to force adherence
             positive = (
@@ -574,7 +622,7 @@ class PosterGenerator:
                     pass
 
         # 5. Build Final Prompt
-        pos, neg = PromptEngineer.build_prompt(title, aesthetic, ai_prompt, style_data)
+        pos, neg = PromptEngineer.build_prompt(title, aesthetic, ai_prompt, style_data, cfg=cfg)
 
         logger.info(f"🎨 Generating Image...")
 
@@ -611,24 +659,30 @@ class PosterGenerator:
             ).images[0]
 
         # --- REFINEMENT PASS (Quality Boost) ---
-        if event_id: ProgressTracker.set_progress(event_id, 60, "Polishing details (Refinement Pass)...")
-        try:
-            from diffusers import AutoPipelineForImage2Image
-            refiner = AutoPipelineForImage2Image.from_pipe(pipe)
-            with torch.inference_mode():
-                img = refiner(
-                    prompt=pos,
-                    negative_prompt=neg,
-                    image=img,
-                    strength=0.2,  # Low strength = subtle refinement
-                    num_inference_steps=2,
-                    guidance_scale=0.0,
-                ).images[0]
-            logger.info("✨ Refinement pass complete!")
-            del refiner
-            gc.collect()
-        except Exception as ref_err:
-            logger.warning(f"Refinement pass failed: {ref_err}. Using base image.")
+        # SKIP refinement for Cartoon/Vector style because it adds unwanted texture/noise
+        is_cartoon = "cartoon" in pos.lower() or "vector" in pos.lower()
+        
+        if not is_cartoon:
+            if event_id: ProgressTracker.set_progress(event_id, 60, "Polishing details (Refinement Pass)...")
+            try:
+                from diffusers import AutoPipelineForImage2Image
+                refiner = AutoPipelineForImage2Image.from_pipe(pipe)
+                with torch.inference_mode():
+                    img = refiner(
+                        prompt=pos,
+                        negative_prompt=neg,
+                        image=img,
+                        strength=0.2,  # Low strength = subtle refinement
+                        num_inference_steps=2,
+                        guidance_scale=0.0,
+                    ).images[0]
+                logger.info("✨ Refinement pass complete!")
+                del refiner
+                gc.collect()
+            except Exception as ref_err:
+                logger.warning(f"Refinement pass failed: {ref_err}. Using base image.")
+        else:
+            logger.info("ℹ️ Skipping refinement for Cartoon/Vector style (keeps clean lines)")
 
         # 7. Render Text Overlay
         print("DEBUG: Starting TextOverlayRenderer.render...")
