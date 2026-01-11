@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Text, Enum, Float
 from sqlalchemy.sql import func
 from app.db.base import Base
 import enum
@@ -27,5 +27,9 @@ class Event(Base):
 
     # For AI Marketing Strategy (Stored as JSON string or simple text for now)
     marketing_strategy = Column(Text, nullable=True)
+    
+    # AR / Geolocation
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())

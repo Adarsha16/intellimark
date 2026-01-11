@@ -250,3 +250,103 @@ Style Data: {'theme': 'Elegant', 'primary_color': '#003366', 'secondary_color': 
 --- KU Anniversary ---
 AI Prompt: { "visual_prompt": "Majestic traditional Nepali architecture with intricate red brickwork and dark wood carvings, nestled within the lush green rolling hills of Dhulikhel. Golden hour sunlight
 Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
+
+--- GreenHouse Event ---
+AI Prompt: A breathtaking interior of a modern architectural greenhouse, massive curved glass panels reflecting golden hour sunlight, lush tropical foliage including giant monstera leaves and hanging emerald ivy, soft mist catching beams of light, intricate black steel framework, vibrant exotic flowers in bloom, high-detail botanical textures, cinematic depth of field, Unreal Engine 5 render, tranquil and sustainable atmosphere.
+Style Data: {'theme': 'Modern Nature', 'primary_color': '#2E7D32', 'secondary_color': '#F5F5F5', 'font_style': 'Modern', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of a tactical futuristic battlefield featuring glowing floating blue Radianite crystals. Sharp anime aesthetic with silhouettes of tactical agents standing amidst swirling teal wind effects and crystalline ice barriers. High-contrast lighting with deep shadows and vibrant orange sparks. A wide-angle shot of a high-tech urban courtyard under a twilight sky, emphasizing sharp edges and glowing energy trails.
+Style Data: {'theme': 'Cyberpunk Tech', 'primary_color': '#00F0FF', 'secondary_color': '#FF4655', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic tactical combat zone. Floating glowing turquoise radianite crystals hover amidst sharp, brutalist architecture. Intense volumetric lighting with teal and deep red highlights. In the distance, silhouettes of tactical agents stand on a floating platform. Atmospheric sparks, digital glitch particles, and a dramatic sunset sky with swirling clouds. High-fidelity textures, sharp anime-influenced aesthetic, hyper-detailed environment.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: A high-octane cinematic scene featuring sharp tactical agents in sleek gear standing amidst floating blue radianite crystals. A futuristic urban battlefield with glowing neon cyan and orange accents under a twilight sky. Unreal Engine 5 render, sharp anime aesthetic, volumetric fog, dramatic rim lighting, hyper-realistic textures of carbon fiber and glowing energy pulses.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F6FF', 'secondary_color': '#FF4655', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: A cinematic Unreal Engine 5 render of floating blue radianite crystals amidst the shattered architecture of a Mediterranean floating city. Sharp, vibrant anime-style aesthetics with glowing cyan energy trails. In the foreground, a tactical carbon-fiber knife and a high-tech agent's glove. High contrast lighting with deep shadows and neon magenta highlights, hyper-detailed textures, futuristic tactical atmosphere.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00FFCC', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic wide shot of a futuristic tactical combat arena featuring floating cyan radianite crystals and sharp geometric architecture. Vibrant neon energy trails in teal and orange slice through the air. Sharp anime-style character silhouettes wearing tactical gear stand amidst cinematic fog. High-contrast lighting with deep shadows, Unreal Engine 5 render, volumetric light rays, hyper-detailed futuristic environment with metallic surfaces.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F0FF', 'secondary_color': '#FF4655', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: Cinematic wide shot of a futuristic high-tech laboratory, glowing teal and violet holographic code floating in mid-air, intricate circuit board patterns etched into dark metallic walls, macro focus on a mechanical keyboard with neon RGB backlighting, volumetric lighting through digital haze, hyper-realistic Unreal Engine 5 render, sharp focus, vibrant data streams, cybernetic atmosphere.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F2FF', 'secondary_color': '#0A0A0A', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic data sanctum. Floating translucent holographic code snippets and glowing binary streams orbit a central golden server core. Atmospheric blue and cyan volumetric lighting, sharp digital artifacts, high-tech architectural details, deep shadows, ultra-detailed circuitry patterns etched into obsidian floors, epic scale, photorealistic tech aesthetic, intricate data visualizations, and glowing fiber optic cables.
+Style Data: {'theme': 'Tech', 'primary_color': '#00E5FF', 'secondary_color': '#0A0A0A', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of a tactical urban battlefield with floating blue radianite crystals and glowing neon energy. Sharp cel-shaded anime aesthetic featuring silhouettes of tactical agents in high-tech gear. Vibrant teal and orange sparks fly through the air. Dramatic volumetric lighting, high-contrast shadows, and futuristic architecture with glowing holographic interfaces and crystalline structures.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: A cinematic Unreal Engine 5 render of a futuristic sanctuary for master coders. Glowing golden circuitry patterns etch across dark obsidian walls. Floating holographic interfaces display complex algorithms in neon cyan. In the center, a monumental glowing server tower pulses like a heart. Volumetric lighting, deep shadows, intricate data streams, and hyper-realistic metallic textures create an epic, heroic atmosphere.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F3FF', 'secondary_color': '#0A0A0A', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: Hyper-realistic cinematic shot of a dark futuristic data center illuminated by glowing cyan and magenta circuit lines. Floating 3D holographic code snippets and binary streams drift through the air. In the center, a sleek mechanical throne constructed from server racks and fiber optic cables. High contrast, Unreal Engine 5 render, volumetric lighting, sharp focus, technical atmosphere, digital mastery.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F0FF', 'secondary_color': '#0A0A0A', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: A high-tech digital sanctuary featuring glowing teal and gold hextech-inspired circuit patterns etched into polished obsidian walls. Centered is a floating holographic core emitting complex data streams and cascading binary code. Cinematic lighting with thick volumetric fog and sharp neon highlights, Unreal Engine 5 render. Blurred professional mechanical keyboards with RGB lighting occupy the foreground, creating a heroic atmosphere.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F0FF', 'secondary_color': '#0D0D0D', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: A cinematic Unreal Engine 5 render of a tactical urban environment inspired by Ascent, featuring floating cyan radianite crystals and glowing energy fractures. In the foreground, a stylized agent silhouette with sharp anime-inspired edges stands against a backdrop of cherry blossom petals and futuristic architecture. Dramatic high-contrast lighting with deep teal and vibrant orange highlights, volumetric fog, and ultra-detailed textures.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: Hyper-realistic macro photography of a towering stack of thirty juicy cheeseburgers on a rustic wooden table. Melting golden cheddar cheese cascades down charred beef patties, crisp green lettuce, and vibrant red tomatoes. Sesame seeds frozen in mid-air, steam rising, high-speed splash photography of ketchup droplets. Bright stadium floodlights, cinematic bokeh background of an American diner, high-octane atmosphere, Unreal Engine 5 render style.
+Style Data: {'theme': 'Grunge', 'primary_color': '#E63946', 'secondary_color': '#FFB703', 'font_style': 'Bold', 'layout': 'TopLeft'}
+
+--- Sandwich Eating Competition ---
+AI Prompt: Extreme close-up, low-angle shot of a colossal, multi-layered deli sandwich towering like a skyscraper. Crisp lettuce leaves, melting cheddar cheese dripping down sides, thick slices of smoked ham and roast beef. Crumbs scattering in mid-air with dynamic motion blur. Bright stadium spotlights casting dramatic shadows. Background features a bokeh-blurred, cheering crowd in a high-energy arena. Hyper-realistic food photography, 8k resolution.
+Style Data: {'theme': 'Street Food / Energetic', 'primary_color': '#FFD700', 'secondary_color': '#1A1A1A', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Sumo Wrestling ---
+AI Prompt: Hyper-realistic close-up of two massive sumo wrestlers in a powerful stance within a circular clay dohyo. Clouds of sacred salt particles frozen in mid-air under dramatic spotlighting. Traditional Japanese architecture in the blurred background with paper lanterns. Intense muscle detail, silk mawashi belts, and focused expressions. Cinematic lighting, 8k resolution, deep shadows, and vibrant earthy tones.
+Style Data: {'theme': 'Traditional Japanese', 'primary_color': '#E60012', 'secondary_color': '#000000', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- GreenHouse Event ---
+AI Prompt: { "visual_prompt": "A sprawling Victorian glasshouse conservatory with intricate ironwork frames. Sunlight filters through glass panes, creating soft rays and lens flares over a dense jungle of tropical ferns, monstera leaves, and hanging orchids. The atmosphere is humid and vibrant, with dust motes dancing in light beams. Hyper
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
+
+--- Sumo Wrestling ---
+AI Prompt: High-impact cinematic photograph of two massive sumo wrestlers facing each other in a traditional sand-covered dohyo ring. Dramatic low-angle perspective, salt particles frozen in mid-air from a ritual toss. Intense spotlighting highlighting muscular definition and traditional mawashi belts. A blurred background featuring a wooden tsuriyane roof and traditional Japanese architectural details. Sharp focus, 8k resolution, raw power, earthy tones.
+Style Data: {'theme': 'Bold', 'primary_color': '#D32F2F', 'secondary_color': '#000000', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Sumo Wrestling ---
+AI Prompt: Cinematic wide shot of a traditional Japanese sumo dohyo. A powerful rikishi in a silk mawashi throws a handful of salt into the air, frozen in time. The circular sand ring is illuminated by a single overhead dramatic spotlight. Ancient wooden pillars and a thatched roof visible in the background. Dust particles dancing in the light, high contrast, authentic Edo-period aesthetic, 8k resolution.
+Style Data: {'theme': 'Traditional Bold', 'primary_color': '#E60012', 'secondary_color': '#000000', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Sumo Wrestling ---
+AI Prompt: A dramatic low-angle cinematic shot of two massive sumo wrestlers mid-clash in a traditional clay dohyo ring. Intricate silk mawashi belts, sweat glistening on muscular skin, intense facial expressions. Above, a Shinto-style roof with thick hanging tassels. Warm amber spotlighting cuts through a hazy, dust-filled atmosphere. Traditional wooden stadium architecture blurred in the background. Hyper-realistic, 8k resolution, cinematic lighting.
+Style Data: {'theme': 'Traditional Japanese Sport', 'primary_color': '#E60012', 'secondary_color': '#000000', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Burger Eating Competition ---
+AI Prompt: { "visual_prompt": "Towering stacks of gargantuan cheeseburgers with melting golden cheddar, sesame seeds suspended in mid-air, dramatic warm spotlighting on a rustic wooden table. Steam rising from thick beef patties and crisp lettuce. Vivid food photography style, macro details of textures, 8k resolution, cinematic composition, high-energy atmosphere with blurred spectators in the background, saturated colors, Unreal Engine 5 render.", "design_style": { "theme": "Grunge", "primary_color": "#FFCC00", "secondary_color": "#222222", "font_style": "Bold", "layout": "Bottom"
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic shot of floating teal radianite crystals and jagged futuristic architecture. Sharp cel-shaded anime aesthetic with high-contrast shadows. A sleek agent silhouette stands amidst swirling neon teal smoke and orange embers. Unreal Engine 5 render, vibrant tactical lighting, glowing circuitry patterns on the ground, dramatic low-angle perspective, hyper-detailed textures, volumetric fog, sharp cinematic focus.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic data center with towering holographic servers. Thousands of glowing cyan code fragments float in mid-air, forming intricate patterns. Sharp geometric architecture, deep shadows, and volumetric blue lighting. A silhouetted figure works at a high-tech terminal, surrounded by multiple translucent floating digital displays, atmospheric smoke, and dramatic lens flares.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00FFFF', 'secondary_color': '#000000', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Sumo Wrestling ---
+AI Prompt: Cinematic wide shot of a traditional Japanese dohyo ring under dramatic spotlights. Muscular sumo wrestlers in silk mawashi belts brace for impact as a cloud of purified salt hangs suspended in mid-air. Warm amber lantern light illuminates the coarse sand and braided straw tawara. Deep shadows, ukiyo-e composition style, high-tension atmosphere, hyper-realistic skin textures, theatrical lighting.
+Style Data: {'theme': 'Traditional Japanese', 'primary_color': '#D4AF37', 'secondary_color': '#1A1A1A', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic tactical arena. Floating jagged teal Radianite crystals pulse with energy amidst sharp geometric architecture. Dramatic high-contrast lighting with deep shadows and vibrant orange sparks. A sleek, cel-shaded anime aesthetic featuring glowing holographic interfaces and metallic surfaces. Distant silhouettes of tactical agents standing on a rooftop overlooking a neon-lit urban battlefield, atmospheric fog.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
