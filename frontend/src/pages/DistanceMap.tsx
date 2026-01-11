@@ -105,10 +105,7 @@ export default function DistanceMap() {
 
             <div className="bg-white p-6 border-t border-slate-200 z-10 relative">
                 <h3 className="font-bold text-lg mb-2">Navigation Started</h3>
-                <p className="text-slate-500 text-sm">Path visualized. Switch to AR for camera guidance.</p>
-                <Button className="w-full mt-4 bg-indigo-600 text-white gap-2" onClick={() => navigate(`/ar-view?lat=${targetLat}&lng=${targetLng}&title=${title}`)}>
-                    <Navigation className="w-4 h-4" /> Switch to Live AR View
-                </Button>
+                <p className="text-slate-500 text-sm">Path visualized. Follow the path to reach your destination.</p>
             </div>
         </div>
     );

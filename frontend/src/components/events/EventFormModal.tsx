@@ -42,17 +42,50 @@ export default function EventFormModal({ isOpen, onClose, onSubmit, initialData,
         if (isOpen && !initialData) setFormData(DEFAULT_FORM);
     }, [isOpen, initialData]);
 
+    const reverseGeocode = async (lat: number, lng: number) => {
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+            if (res.ok) {
+                const data = await res.json();
+                // Construct a nice address string
+                // Preference: display_name is usually long, address parts might be better?
+                // Using display_name is simplest for now, maybe taking first 2 parts?
+                // Let's take the full display_name but maybe truncate or rely on user to edit.
+                // Usually "Building, Road, Suburb" is best.
+                // Nominatim 'display_name' is very verbose. `address` object has specific fields.
+                // Let's try to get specific parts if available.
+                const addr = data.address || {};
+                const shortLoc = [
+                    addr.building || addr.shop || addr.amenity || addr.tourism,
+                    addr.road,
+                    addr.suburb || addr.city || addr.town
+                ].filter(Boolean).join(", ");
+
+                const finalLoc = shortLoc || data.display_name || "";
+
+                if (finalLoc) {
+                    setFormData(prev => ({ ...prev, location: finalLoc }));
+                    toast.success(`Location set: ${finalLoc.substring(0, 30)}...`);
+                }
+            }
+        } catch (e) {
+            console.error("Reverse geocode failed", e);
+        }
+    };
+
     const grabLocation = () => {
         if (!navigator.geolocation) return toast.error("Geolocation not supported");
         toast.promise(
             new Promise((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
+                        const { latitude, longitude } = pos.coords;
                         setFormData(prev => ({
                             ...prev,
-                            latitude: pos.coords.latitude,
-                            longitude: pos.coords.longitude
+                            latitude: latitude,
+                            longitude: longitude
                         }));
+                        reverseGeocode(latitude, longitude);
                         resolve(pos);
                     },
                     (err) => reject(err)
@@ -136,7 +169,10 @@ export default function EventFormModal({ isOpen, onClose, onSubmit, initialData,
                                 <MapPicker
                                     lat={formData.latitude || 0}
                                     lng={formData.longitude || 0}
-                                    onChange={(lat, lng) => setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }))}
+                                    onChange={(lat, lng) => {
+                                        setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
+                                        reverseGeocode(lat, lng);
+                                    }}
                                 />
                                 <p className="text-[10px] text-slate-400 italic">Click map to set coordinates.</p>
                             </div>

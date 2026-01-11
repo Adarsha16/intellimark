@@ -446,7 +446,7 @@ class PromptEngineer:
         # 2. Determine Style Keywords
         # Auto-detect "Cartoony" requirement for Gaming/Hackathons/Tech (Fixes graininess)
         check_title = title.lower()
-        if any(x in check_title for x in ["hackathon", "valorant", "gaming", "esports", "pubg", "fortnite", "minecraft", "roblox", "tournament", "coding", "dev", "code"]):
+        if any(x in check_title for x in ["hackathon", "valorant", "gaming", "esports", "pubg", "fortnite", "minecraft", "roblox", "tournament", "coding", "dev", "code", "wrestling", "fight", "sumo", "boxing", "match"]):
             theme = "Cartoon"
         else:
             theme = style_data.get("theme", "Modern") if style_data else "Modern"
@@ -459,14 +459,15 @@ class PromptEngineer:
             "(badge:2.0), (stamp:2.0), (circular icon:2.0), (corner text:2.0), (border:1.5), (frame:1.5), "
             "blurry, pixelated, low quality, ugly, deformed, bad anatomy, "
             "grain, noise, glitch, chromatic aberration, distortion, "
-            "faces, people, crowded, busy, messy, complex patterns, high frequency detail, clutter"
+            "crowded, busy, messy, complex patterns, high frequency detail, clutter, "
+            "(bad hands:1.5), (missing fingers:1.5), (extra limbs:1.5), (fused fingers:1.5), (mutation:1.2), (malformed limbs:1.2)"
         )
 
         # 4. Build Positive Prompt
         # 4. Build Positive Prompt
         # [AGGRESSIVE OVERRIDE FOR CARTOON]
         check_title = title.lower()
-        if theme == "Cartoon" or any(x in check_title for x in ["hackathon", "valorant", "gaming", "esports"]):
+        if theme == "Cartoon" or any(x in check_title for x in ["hackathon", "valorant", "gaming", "esports", "wrestling", "fight", "sumo", "boxing"]):
              # "Lying to the AI" Strategy:
              # Using "Hackathon" triggers circuit board mess.
              # Using "Technology Icon" triggers clean minimalism.
@@ -474,22 +475,28 @@ class PromptEngineer:
                  "hackathon": "orange laptop",
                  "valorant": "blue futuristic gun", 
                  "gaming": "game controller",
-                 "esports": "trophy"
+                 "gaming": "game controller",
+                 "esports": "trophy",
+                 "sumo": "sumo wrestler character",
+                 "boxing": "boxing gloves",
+                 "wrestling": "wrestler mask",
+                 "fight": "fist"
              }
              subject = "technology object"
              for k, v in subject_map.items():
                  if k in check_title: subject = v
                  
              positive = (
-                 f"isometric vector art of a {subject}, {style_keywords}, "
-                 "single object, centered, vast white background, solid background, clean lines, behance, correct geometry, straight lines"
+                 f"minimalist flat vector icon of {subject}, {style_keywords}, "
+                 "(vast white background:1.5), (centered:1.3), (small subject:1.2), "
+                 "single object, solid white background, clean lines, behance, correct geometry, simple"
              )
              # Force clean background in negative
-             negative += ", (background pattern:1.5), (crowd:1.5), (cluttered:1.5), (many objects:1.5), (highly detailed:1.5), (wallpaper:1.5), (text:1.5), (distorted:2.0), (warped:2.0), (melted:2.0)"
+             negative += ", (background pattern:1.5), (crowd:1.5), (cluttered:1.5), (texture:1.5), (grain:1.5), (noise:1.5), (stretched:1.5), (long face:1.5), (distorted aspect ratio:1.5), (detailed background:1.5)"
              
-             # [IMPORTANT] Force higher quality for geometry stability
-             cfg.steps = 3 
-             cfg.guidance = 1.0
+             # [IMPORTANT] Turbo expects 0.0 guidance. Higher values = Noise.
+             cfg.steps = 2
+             cfg.guidance = 0.0
              
         elif ai_description and len(ai_description) > 15:
             # Combined: AI Description + Enforced Style + Quality Boosters
@@ -528,7 +535,7 @@ class PosterGenerator:
              return self.pipeline
              
         logger.info(f"⏳ Loading Pipeline: {self.model_id}")
-        if event_id: ProgressTracker.set_progress(event_id, 8, "Loading AI Model (Heavy)...")
+        if event_id: ProgressTracker.set_progress(event_id, 8, "Loading AI Core... First run may take 5+ mins (Downloading Model)")
         try:
             pipe = AutoPipelineForText2Image.from_pretrained(
                 self.model_id, torch_dtype=torch.float32, use_safetensors=True

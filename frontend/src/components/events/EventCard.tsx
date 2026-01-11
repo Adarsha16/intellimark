@@ -152,21 +152,13 @@ export default function EventCard({ event, generationStartTime, onEdit, onDelete
             <div className="p-4 bg-slate-50 border-t border-slate-100 space-y-2">
                 {/* AR / Map Actions */}
                 {(event.latitude && event.longitude) ? (
-                    <div className="grid grid-cols-2 gap-2">
-                        <Button
-                            variant="outline"
-                            className="bg-white text-xs h-8 gap-1"
-                            onClick={() => navigate(`/distance-map?lat=${event.latitude}&lng=${event.longitude}&title=${event.title}`)}
-                        >
-                            <MapIcon className="w-3 h-3" /> Map Path
-                        </Button>
-                        <Button
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8 gap-1"
-                            onClick={() => navigate(`/ar-view?lat=${event.latitude}&lng=${event.longitude}&title=${event.title}`)}
-                        >
-                            <Navigation className="w-3 h-3" /> AR Nav
-                        </Button>
-                    </div>
+                    <Button
+                        variant="outline"
+                        className="bg-white gap-2 w-full border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                        onClick={() => navigate(`/distance-map?lat=${event.latitude}&lng=${event.longitude}&title=${event.title}`)}
+                    >
+                        <MapIcon className="w-4 h-4" /> Map Path
+                    </Button>
                 ) : (
                     <div className="text-[10px] text-center text-slate-400 py-1">
                         No GPS coordinates set

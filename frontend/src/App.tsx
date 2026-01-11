@@ -11,7 +11,6 @@ import Settings from './pages/Settings';
 import Events from './pages/Events';
 import Profile from './pages/Profile';
 import Groups from './pages/Groups';
-import ARView from './pages/ARView';
 import DistanceMap from './pages/DistanceMap';
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -39,7 +38,6 @@ function App() {
             </Route>
 
             {/* Full Screen Stats/AR Routes */}
-            <Route path="/ar-view" element={<ProtectedRoute><ARView /></ProtectedRoute>} />
             <Route path="/distance-map" element={<ProtectedRoute><DistanceMap /></ProtectedRoute>} />
           </Routes>
         </EventsProvider>
