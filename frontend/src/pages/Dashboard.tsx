@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    CartesianGrid, PieChart, Pie, Cell, Legend, AreaChart, Area
+    CartesianGrid, Cell
 } from 'recharts';
 import {
     Briefcase, Users, Calendar, DollarSign, RefreshCw,
-    Loader2, Sparkles, ArrowRight, ShieldCheck
+    Loader2, Sparkles, ShieldCheck, Download, FileText
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -29,12 +29,11 @@ interface ActivityLog {
     user_email: string;
 }
 
-// Modern Corporate Palette
+// --- Corporate Color Palette ---
 const COLORS = {
     primary: '#6366f1',   // Indigo
     success: '#10b981',   // Emerald
     warning: '#f59e0b',   // Amber
-    danger: '#ef4444',    // Red
     slate: '#64748b',     // Slate
     chart: ['#6366f1', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b']
 };
@@ -43,7 +42,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    // --- REAL DATA STATE ---
+    // --- Data State ---
     const [stats, setStats] = useState<RealDataStats>({
         totalRevenue: 0,
         securedRevenue: 0,
@@ -54,16 +53,17 @@ const Dashboard = () => {
     });
 
     const [chartFundingByStatus, setChartFundingByStatus] = useState<any[]>([]);
-    const [chartEventsByMonth, setChartEventsByMonth] = useState<any[]>([]);
     const [recentLogs, setRecentLogs] = useState<ActivityLog[]>([]);
 
-    // AI State
+    // --- AI Strategy State ---
     const [strategyReport, setStrategyReport] = useState<string | null>(null);
     const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
 
-    // --- DATA PROCESSORS (PURE LOGIC) ---
+    // --- Helpers ---
+    const formatCurrency = (val: number) =>
+        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
 
-    // 1. Group Funding by Status (e.g., Secured vs Potential)
+    // --- Data Processing ---
     const processFundingChart = (sponsors: any[]) => {
         const map: Record<string, number> = {};
         sponsors.forEach(s => {
@@ -73,31 +73,12 @@ const Dashboard = () => {
         return Object.keys(map).map(key => ({
             name: key,
             value: map[key]
-        })).sort((a, b) => b.value - a.value); // Sort highest funding first
-    };
-
-    // 2. Timeline of Events (Real dates)
-    const processEventTimeline = (events: any[]) => {
-        const map: Record<string, number> = {};
-        events.forEach(e => {
-            if (!e.date) return;
-            const date = new Date(e.date);
-            const key = date.toLocaleString('default', { month: 'short', year: '2-digit' });
-            map[key] = (map[key] || 0) + 1;
-        });
-        // Convert to array and sort chronologically is tricky with just strings, 
-        // so we trust the DB sort or limit to recent months in a real app.
-        // For now, we return keys as they come.
-        return Object.keys(map).map(key => ({
-            name: key,
-            events: map[key]
-        }));
+        })).sort((a, b) => b.value - a.value);
     };
 
     const fetchData = async () => {
         setRefreshing(true);
         try {
-            // Fetch everything in parallel
             const [sponsorsRes, eventsRes, usersRes, logsRes] = await Promise.allSettled([
                 api.get('/sponsors/'),
                 api.get('/events/'),
@@ -105,34 +86,27 @@ const Dashboard = () => {
                 api.get('/admin/logs')
             ]);
 
-            // --- 1. SPONSORS ---
+            // 1. Sponsors & Revenue
             let sponsors = [];
-            if (sponsorsRes.status === 'fulfilled') {
-                sponsors = sponsorsRes.value.data;
-            }
+            if (sponsorsRes.status === 'fulfilled') sponsors = sponsorsRes.value.data;
 
             const totalRev = sponsors.reduce((acc: number, s: any) => acc + (s.total_funding || 0), 0);
             const securedRev = sponsors
                 .filter((s: any) => s.status === 'Secured')
                 .reduce((acc: number, s: any) => acc + (s.total_funding || 0), 0);
 
-            // --- 2. EVENTS ---
+            // 2. Events
             let events = [];
-            if (eventsRes.status === 'fulfilled') {
-                events = eventsRes.value.data;
-            }
+            if (eventsRes.status === 'fulfilled') events = eventsRes.value.data;
             const upcoming = events.filter((e: any) => new Date(e.date) > new Date()).length;
 
-            // --- 3. USERS ---
+            // 3. Users
             let memberCount = 0;
             if (usersRes.status === 'fulfilled') memberCount = usersRes.value.data.length;
 
-            // --- 4. LOGS ---
-            if (logsRes.status === 'fulfilled') {
-                setRecentLogs(logsRes.value.data.slice(0, 6)); // Top 6
-            }
+            // 4. Logs
+            if (logsRes.status === 'fulfilled') setRecentLogs(logsRes.value.data.slice(0, 5));
 
-            // Update State
             setStats({
                 totalRevenue: totalRev,
                 securedRevenue: securedRev,
@@ -143,11 +117,10 @@ const Dashboard = () => {
             });
 
             setChartFundingByStatus(processFundingChart(sponsors));
-            setChartEventsByMonth(processEventTimeline(events));
 
         } catch (error) {
             console.error(error);
-            toast.error("Connection error. Using cached data if available.");
+            toast.error("Network error. Showing cached data.");
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -156,12 +129,13 @@ const Dashboard = () => {
 
     useEffect(() => { fetchData(); }, []);
 
+    // --- Actions ---
     const generateStrategy = async () => {
         setIsGeneratingStrategy(true);
         try {
             const res = await api.post('/admin/generate-strategy');
             setStrategyReport(res.data.report);
-            toast.success("Analysis Complete");
+            toast.success("Strategy Analysis Complete");
         } catch (err) {
             toast.error("AI Service Unavailable");
         } finally {
@@ -169,92 +143,126 @@ const Dashboard = () => {
         }
     };
 
-    const formatCurrency = (val: number) =>
-        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+    const handleExportPDF = async () => {
+        if (!strategyReport) {
+            toast.error("Please generate the AI Strategy first.", { icon: '📄' });
+            return;
+        }
 
+        const loadId = toast.loading("Compiling Executive PDF...");
+        try {
+            const res = await api.post('/admin/export-report', {
+                stats: stats,
+                strategy: strategyReport
+            });
+            window.open(`http://localhost:8000${res.data.url}`, '_blank');
+            toast.success("Report Downloaded");
+        } catch (e) {
+            toast.error("Export failed");
+        } finally {
+            toast.dismiss(loadId);
+        }
+    };
+
+    // --- Render ---
     if (loading) return (
         <div className="h-[80vh] flex flex-col items-center justify-center gap-4">
             <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
-            <p className="text-slate-500 font-medium">Aggregating secure data...</p>
+            <p className="text-slate-500 font-medium">Securely aggregating data...</p>
         </div>
     );
 
     return (
         <div className="space-y-8 pb-12 animate-in fade-in duration-500">
-            {/* --- HEADER --- */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-slate-200 pb-6">
+
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-200 pb-6">
                 <div>
-                    <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Executive Overview</h2>
-                    <p className="text-slate-500 font-medium mt-1">Real-time performance metrics & AI strategy.</p>
+                    <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Executive Dashboard</h2>
+                    <p className="text-slate-500 font-medium mt-1">Real-time performance metrics & strategic insights.</p>
                 </div>
-                <button
-                    onClick={fetchData}
-                    disabled={refreshing}
-                    className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 shadow-sm transition flex items-center gap-2 active:scale-95 disabled:opacity-50"
-                >
-                    <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                    {refreshing ? 'Syncing...' : 'Refresh Data'}
-                </button>
+
+                <div className="flex gap-3">
+                    <button
+                        onClick={handleExportPDF}
+                        disabled={!strategyReport}
+                        className={`
+                            px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition flex items-center gap-2
+                            ${strategyReport
+                                ? 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95'
+                                : 'bg-slate-100 text-slate-400 cursor-not-allowed'}
+                        `}
+                        title={!strategyReport ? "Generate AI Strategy first" : "Download PDF Report"}
+                    >
+                        {strategyReport ? <Download className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
+                        Export PDF
+                    </button>
+
+                    <button
+                        onClick={fetchData}
+                        disabled={refreshing}
+                        className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 shadow-sm transition flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                        {refreshing ? 'Syncing...' : 'Refresh'}
+                    </button>
+                </div>
             </div>
 
-            {/* --- KPI CARDS (Bento Row 1) --- */}
+            {/* KPI Cards (Bento Grid Row 1) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard
-                    title="Total Pipeline Value"
+                    title="Total Pipeline"
                     value={formatCurrency(stats.totalRevenue)}
                     subValue={`${formatCurrency(stats.securedRevenue)} secured`}
-                    icon={DollarSign}
-                    color="primary"
+                    icon={DollarSign} color="primary"
                 />
                 <MetricCard
-                    title="Sponsor Relationships"
+                    title="Sponsors"
                     value={stats.totalSponsors.toString()}
                     subValue="Active partners"
-                    icon={Briefcase}
-                    color="warning"
+                    icon={Briefcase} color="warning"
                 />
                 <MetricCard
-                    title="Events Scheduled"
+                    title="Events"
                     value={stats.upcomingEventsCount.toString()}
                     subValue={`out of ${stats.totalEvents} total`}
-                    icon={Calendar}
-                    color="success"
+                    icon={Calendar} color="success"
                 />
                 <MetricCard
-                    title="Club Members"
+                    title="Members"
                     value={stats.totalMembers.toString()}
                     subValue="Registered users"
-                    icon={Users}
-                    color="slate"
+                    icon={Users} color="slate"
                 />
             </div>
 
-            {/* --- ANALYTICS ROW (Bento Row 2) --- */}
+            {/* Analytics Row (Bento Grid Row 2) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* 1. FUNDING DISTRIBUTION (Honest Data) */}
+                {/* 1. Revenue Chart (Left Column) */}
                 <motion.div
                     initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
                     className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col"
                 >
                     <div className="mb-6">
                         <h3 className="text-lg font-bold text-slate-900">Revenue by Status</h3>
-                        <p className="text-sm text-slate-500">Actual financial distribution based on deal stages.</p>
+                        <p className="text-sm text-slate-500">Financial distribution based on deal stages.</p>
                     </div>
 
                     {chartFundingByStatus.length > 0 ? (
                         <div className="h-64 w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartFundingByStatus} layout="vertical" margin={{ left: 10, right: 30 }}>
+                                <BarChart data={chartFundingByStatus} layout="vertical" margin={{ left: 0, right: 30 }}>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
                                     <XAxis type="number" hide />
-                                    <YAxis dataKey="name" type="category" tick={{ fontSize: 12, fill: '#64748b' }} width={80} />
+                                    <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#64748b' }} width={70} />
                                     <Tooltip
                                         cursor={{ fill: '#f8fafc' }}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                         formatter={(val: number) => formatCurrency(val)}
                                     />
-                                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={30}>
+                                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
                                         {chartFundingByStatus.map((_, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS.chart[index % COLORS.chart.length]} />
                                         ))}
@@ -263,11 +271,11 @@ const Dashboard = () => {
                             </ResponsiveContainer>
                         </div>
                     ) : (
-                        <EmptyState text="Add sponsors with funding amounts to see analytics." />
+                        <EmptyState text="No financial data available." />
                     )}
                 </motion.div>
 
-                {/* 2. ACTIVITY LOG (Security & Audit) */}
+                {/* 2. Audit Log (Right 2 Columns) */}
                 <motion.div
                     initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
                     className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200"
@@ -275,14 +283,14 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h3 className="text-lg font-bold text-slate-900">System Audit Log</h3>
-                            <p className="text-sm text-slate-500">Recent administrative actions and security events.</p>
+                            <p className="text-sm text-slate-500">Live feed of administrative actions and security events.</p>
                         </div>
                         <ShieldCheck className="w-5 h-5 text-slate-300" />
                     </div>
 
                     <div className="space-y-0">
                         {recentLogs.length > 0 ? (
-                            recentLogs.map((log, idx) => (
+                            recentLogs.map((log) => (
                                 <div key={log.id} className="flex gap-4 items-start py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 px-2 rounded-lg transition">
                                     <div className="min-w-[4rem] text-[11px] font-medium text-slate-400 pt-1">
                                         {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -293,19 +301,19 @@ const Dashboard = () => {
                                             {log.action} <span className="font-normal text-slate-500">by {log.user_email}</span>
                                         </p>
                                         <p className="text-xs text-slate-500 mt-0.5 font-mono bg-slate-100 inline-block px-1.5 py-0.5 rounded">
-                                            {log.details || "No details provided"}
+                                            {log.details || "System Event"}
                                         </p>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <EmptyState text="No recent system activity recorded." />
+                            <EmptyState text="No recent activity recorded." />
                         )}
                     </div>
                 </motion.div>
             </div>
 
-            {/* --- AI STRATEGY SECTION (Full Width) --- */}
+            {/* --- AI Strategy Section (Full Width) --- */}
             <motion.div
                 initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}
                 className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-2xl text-white shadow-xl shadow-slate-900/10 border border-slate-700/50"
@@ -330,20 +338,19 @@ const Dashboard = () => {
                     </button>
                 </div>
 
-                <div className="bg-slate-950/30 rounded-xl p-6 border border-white/5 min-h-[160px] max-h-[400px] overflow-y-auto custom-scrollbar">
+                <div className="bg-slate-950/30 rounded-xl p-6 border border-white/5 min-h-[160px] max-h-[500px] overflow-y-auto custom-scrollbar">
                     {strategyReport ? (
                         <div className="prose prose-invert prose-sm max-w-none">
-                            {/* Simple markdown parser replacer for bolding */}
                             {strategyReport.split('\n').map((line, i) => (
-                                <p key={i} className={`mb-2 ${line.startsWith('**') ? 'text-indigo-200 font-bold mt-4' : 'text-slate-300'}`}>
-                                    {line.replace(/\*\*/g, '')}
+                                <p key={i} className={`mb-2 leading-relaxed ${line.trim().startsWith('###') || line.trim().startsWith('**') ? 'text-indigo-200 font-bold mt-6 text-lg' : 'text-slate-300'}`}>
+                                    {line.replace(/\#\#\#|\*\*/g, '')}
                                 </p>
                             ))}
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full py-12 text-slate-500">
                             <Sparkles className="w-10 h-10 mb-3 opacity-20" />
-                            <p>No strategy generated yet. Click the button to analyze your data.</p>
+                            <p>No strategy generated yet. Click the button above to analyze your data.</p>
                         </div>
                     )}
                 </div>
@@ -352,7 +359,7 @@ const Dashboard = () => {
     );
 };
 
-// --- Subcomponents ---
+// --- Helper Components ---
 
 const MetricCard = ({ title, value, subValue, icon: Icon, color }: any) => {
     const bgStyles: any = {

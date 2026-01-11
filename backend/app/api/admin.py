@@ -9,6 +9,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.models.admin import ActivityLog
 from app.services.strategy_agent import generate_club_strategy
+from app.services.pdf_generator import create_executive_pdf
 from app.api.deps import get_current_admin
 from app.core.logger import log_activity
 
@@ -85,6 +86,18 @@ async def change_user_role(
         db, admin.id, "Changed Role", f"Changed user {user.email} to {role}"
     )
     return {"message": "Role updated"}
+
+
+@router.post("/export-report")
+async def export_pdf_report(data: dict, admin: User = Depends(get_current_admin)):
+    stats = data.get("stats", {})
+    strategy = data.get("strategy", "No strategy generated.")
+
+    # Call the generator
+    relative_path = create_executive_pdf(stats, strategy)
+
+    # Ensure URL starts with /
+    return {"url": f"/{relative_path}"}
 
 
 @router.get("/logs", response_model=List[LogOut])

@@ -55,7 +55,6 @@ export default function Settings() {
     const tabs = [
         { name: 'User Management', icon: Users },
         { name: 'Activity Logs', icon: Activity },
-        { name: 'System Config', icon: Server },
     ];
 
     return (
@@ -195,57 +194,6 @@ export default function Settings() {
                     </Tab.Panel>
 
                     {/* CONFIG TAB */}
-                    <Tab.Panel className="rounded-2xl bg-white/90 backdrop-blur-sm p-8 shadow-lg border-2 border-purple-100 space-y-8">
-                        <div>
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
-                                    <Server className="w-5 h-5 text-purple-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900">AI Configuration</h3>
-                                    <p className="text-sm text-gray-600">Set thresholds for the AI recommendation engine.</p>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                                <div className="p-6 border-2 border-purple-100 rounded-xl bg-gradient-to-br from-purple-50/50 to-indigo-50/50 hover:border-purple-200 transition-colors">
-                                    <label className="text-sm font-bold text-purple-700 flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4" />
-                                        Matching Confidence (%)
-                                    </label>
-                                    <input
-                                        type="range"
-                                        className="w-full mt-4 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                                        min="0"
-                                        max="100"
-                                        defaultValue="75"
-                                    />
-                                    <div className="flex justify-between text-xs text-gray-500 mt-2 font-medium">
-                                        <span>Loose</span>
-                                        <span className="text-purple-600 font-bold">75%</span>
-                                        <span>Strict</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="pt-8 border-t-2 border-purple-100">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
-                                    <Save className="w-5 h-5 text-purple-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900">Database Operations</h3>
-                                    <p className="text-sm text-gray-600">Manage your data integrity.</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={handleBackup}
-                                className="flex items-center gap-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold transform hover:-translate-y-0.5"
-                            >
-                                <Save className="w-5 h-5" /> Trigger Immediate Backup
-                            </button>
-                        </div>
-                    </Tab.Panel>
 
                 </Tab.Panels>
             </Tab.Group>

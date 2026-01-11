@@ -147,7 +147,6 @@ const Layout = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Bell className="w-5 h-5 text-gray-400" />
 
                         <Menu as="div" className="relative">
                             <Menu.Button className="flex items-center gap-2 text-sm font-semibold">
