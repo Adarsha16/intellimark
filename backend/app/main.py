@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, sponser, admin, event, users
+from app.api import auth, sponser, admin, event, users, groups
 from fastapi.staticfiles import StaticFiles
 from diffusers import StableDiffusionPipeline
 import os
@@ -40,6 +40,7 @@ app.include_router(sponser.router, prefix="/sponsors", tags=["Sponsors"])
 app.include_router(admin.router, prefix="/admin", tags=["Admin Control"])
 app.include_router(event.router, prefix="/events", tags=["Events"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(groups.router, prefix="/groups", tags=["Groups"])
 
 
 @app.get("/")
