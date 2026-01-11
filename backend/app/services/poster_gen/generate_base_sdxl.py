@@ -194,15 +194,36 @@ class TextOverlayRenderer:
             return str(date_str).split("T")[0]
 
     @staticmethod
+    @staticmethod
     def draw_cinematic_text(draw_ctx, x, y, text, font, color="#FFFFFF", spacing=10, align="center", anchor="mm"):
         x, y = int(x), int(y)
-        # Layer 1: Soft (Large Text only)
-        if font.size > 40:
-            draw_ctx.multiline_text((x, y + 4), text, font=font, fill=(0, 0, 0, 100), anchor=anchor, align=align, spacing=spacing)
-        # Layer 2: Hard
-        draw_ctx.multiline_text((x + 2, y + 2), text, font=font, fill=(0, 0, 0, 240), anchor=anchor, align=align, spacing=spacing)
-        # Layer 3: Main
-        draw_ctx.multiline_text((x, y), text, font=font, fill=color, anchor=anchor, align=align, spacing=spacing)
+        
+        # Calculate dynamic stroke width (3% of font size, min 2px)
+        s_width = max(2, int(font.size * 0.03))
+        
+        # Layer 1: Strong Drop Shadow (Offset)
+        draw_ctx.multiline_text(
+            (x + s_width + 1, y + s_width + 1), 
+            text, 
+            font=font, 
+            fill=(0, 0, 0, 180), 
+            anchor=anchor, 
+            align=align, 
+            spacing=spacing
+        )
+        
+        # Layer 2: Main Text with Outline (Stroke)
+        draw_ctx.multiline_text(
+            (x, y), 
+            text, 
+            font=font, 
+            fill=color, 
+            anchor=anchor, 
+            align=align, 
+            spacing=spacing,
+            stroke_width=s_width,
+            stroke_fill="black"
+        )
 
     @staticmethod
     def _render_layout_modern_left(draw, W, H, info, design, overlay_draw):
@@ -285,8 +306,21 @@ class TextOverlayRenderer:
         # 2. Meta Calculation
         clean_date = TextOverlayRenderer._format_datetime(info.get("date"))
         meta_text = f"{clean_date}  |  {info.get('location', '').upper()}"
-        # Increased to 5.5%
-        font_meta = TextOverlayRenderer.load_font(meta_font_path, int(W * 0.055))
+        
+        # Dynamic Fit for Footer (Avoid clipping)
+        target_width = int(W * 0.90) 
+        font_size = int(W * 0.05) # Start slightly smaller (was 0.055)
+        font_meta = TextOverlayRenderer.load_font(meta_font_path, font_size)
+        
+        # Shrink until fits
+        while font_size > 10:
+             bbox = draw.textbbox((0, 0), meta_text, font=font_meta)
+             text_w = bbox[2] - bbox[0]
+             if text_w < target_width:
+                 break
+             font_size -= 2
+             font_meta = TextOverlayRenderer.load_font(meta_font_path, font_size)
+
         bbox_meta = draw.textbbox((0, 0), meta_text, font=font_meta)
         meta_h = bbox_meta[3] - bbox_meta[1]
 

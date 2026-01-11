@@ -234,3 +234,19 @@ Style Data: {'theme': 'Vintage Diner / Grunge', 'primary_color': '#FFD700', 'sec
 --- Sumo Wrestling ---
 AI Prompt: Cinematic low-angle shot of two massive sumo wrestlers facing off in a traditional earthen dohyo ring. Fine sand grains kicked up in the air, dramatic side-lighting highlighting powerful muscular forms and traditional silk mawashi. Background features blurred wooden temple pillars and hanging shide paper. High-contrast, hyper-realistic photography, 8k resolution, intense atmosphere, salt crystals shimmering in the light.
 Style Data: {'theme': 'Traditional Japanese', 'primary_color': '#C41E3A', 'secondary_color': '#000000', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Legends Hackathon ---
+AI Prompt: A futuristic command center with sprawling holographic code streams in vibrant cyan and electric violet. A lone silhouette of a focused programmer interacts with a floating digital interface. Cinematic lighting, Unreal Engine 5 render, intricate circuitry patterns on the floor, volumetric fog, sharp technical details, hyper-realistic textures. Deep obsidian shadows contrast with glowing data nodes and fiber optic cables.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00FFFF', 'secondary_color': '#0a0a0a', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- KU Anniversary ---
+AI Prompt: Cinematic wide-angle view of traditional red brick university buildings with pagoda-inspired architecture nestled in the lush green hills of Dhulikhel. In the far distance, majestic snow-capped Himalayan peaks pierce a clear sky during golden hour. Festive marigold garlands and vibrant silk banners decorate the stone courtyards. Hyper-realistic architectural photography, soft ethereal lighting, prestigious and celebratory atmosphere.
+Style Data: {'theme': 'Elegant', 'primary_color': '#003366', 'secondary_color': '#FFD700', 'font_style': 'Serif', 'layout': 'Center'}
+
+--- KU Anniversary ---
+AI Prompt: Cinematic wide shot of red brick academic buildings featuring traditional Newari wood-carved windows, nestled in the lush green hills of Dhulikhel. In the background, the majestic snow-capped Himalayan peaks pierce a clear blue sky during golden hour. Festive marigold garlands and strings of warm fairy lights drape across stone courtyards. Architectural photography, hyper-realistic, 8k resolution, serene and prestigious atmosphere.
+Style Data: {'theme': 'Elegant', 'primary_color': '#003366', 'secondary_color': '#D4AF37', 'font_style': 'Serif', 'layout': 'Center'}
+
+--- KU Anniversary ---
+AI Prompt: { "visual_prompt": "Majestic traditional Nepali architecture with intricate red brickwork and dark wood carvings, nestled within the lush green rolling hills of Dhulikhel. Golden hour sunlight
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
