@@ -10,6 +10,8 @@ class EventBase(BaseModel):
     date: datetime
     capacity: int
     status: str = "Draft"
+    prize_pool: Optional[str] = None
+    organizer_name: Optional[str] = None
 
 
 class EventCreate(EventBase):

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { type EventFormData } from '../../types';
+import { formatDateForInput } from '../../utils/dateUtils';
 
 interface EventFormModalProps {
     isOpen: boolean;
@@ -10,13 +11,26 @@ interface EventFormModalProps {
     isEditing: boolean;
 }
 
-const DEFAULT_FORM: EventFormData = { title: '', description: '', location: '', date: '', capacity: 100 };
+const DEFAULT_FORM: EventFormData = {
+    title: '',
+    description: '',
+    location: '',
+    date: '',
+    capacity: 100,
+    prize_pool: '',
+    organizer_name: ''
+};
 
 export default function EventFormModal({ isOpen, onClose, onSubmit, initialData, isEditing }: EventFormModalProps) {
     const [formData, setFormData] = useState<EventFormData>(DEFAULT_FORM);
 
     useEffect(() => {
-        if (isOpen && initialData) setFormData(initialData);
+        if (isOpen && initialData) {
+            setFormData({
+                ...initialData,
+                date: formatDateForInput(initialData.date)
+            });
+        }
         if (isOpen && !initialData) setFormData(DEFAULT_FORM);
     }, [isOpen, initialData]);
 
@@ -54,6 +68,18 @@ export default function EventFormModal({ isOpen, onClose, onSubmit, initialData,
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
                         <input className="w-full border p-2.5 rounded-lg" required value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} />
+                    </div>
+
+                    {/* Official Details */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Organizer Name (Optional)</label>
+                            <input className="w-full border p-2.5 rounded-lg" placeholder="e.g. IntelliMark Gaming" value={formData.organizer_name || ''} onChange={e => setFormData({ ...formData, organizer_name: e.target.value })} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Prize Pool / Perks</label>
+                            <input className="w-full border p-2.5 rounded-lg" placeholder="e.g. $10,000 Cash" value={formData.prize_pool || ''} onChange={e => setFormData({ ...formData, prize_pool: e.target.value })} />
+                        </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-8">
                         <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>

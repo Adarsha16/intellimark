@@ -18,6 +18,32 @@ origins = [
     "http://localhost:3000",
 ]
 
+# Base directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Uploads directory
+UPLOADS_DIR = os.path.join(BASE_DIR, "..", "uploads")
+os.makedirs(os.path.join(UPLOADS_DIR, "profile_pictures"), exist_ok=True)
+
+
+# Mount uploads folder
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
+
+os.makedirs("static/generated_posters", exist_ok=True)
+
+# 3. Mount the "static" folder to the "/static" URL
+app.mount("/static", StaticFiles(directory="static"), name="static")
+# --- 2. AI MODEL INITIALIZATION ---
+# Load model globally (CPU mode).
+# Note: This runs once when the server starts.
+
+# CORS Setup (Allow Frontend)
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://localhost:3000",  # Just in case
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

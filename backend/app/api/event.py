@@ -14,6 +14,7 @@ from app.db.session import (
     AsyncSessionLocal,
 )  # Ensure you have a session factory
 from app.services.poster_gen.generate_base_sdxl import generate_event_poster
+from app.services.progress_tracker import ProgressTracker
 import asyncio
 
 
@@ -133,15 +134,17 @@ async def generate_poster_api(
     e_date = str(event.date)
     e_loc = event.location
     e_desc = event.description
+    e_prize = event.prize_pool
+    e_org = event.organizer_name
 
     # 3. Define the Background Worker
-    async def background_worker(eid, title, date, loc, desc):
+    async def background_worker(eid, title, date, loc, desc, prize, org):
         # Run the CPU-heavy generation in a separate thread loop
         loop = asyncio.get_running_loop()
 
         try:
             image_url = await loop.run_in_executor(
-                None, generate_event_poster, title, date, loc, desc, "modern"
+                None, generate_event_poster, title, date, loc, desc, "modern", prize, org, eid
             )
 
             # Open a NEW database session to save the result
@@ -150,15 +153,28 @@ async def generate_poster_api(
                 ev = res.scalars().first()
                 if ev:
                     # Append to strategy field
-                    ev.marketing_strategy = (
-                        ev.marketing_strategy or ""
-                    ) + f"\n\n**Poster:** {image_url}"
+                    # Clean existing poster lines to prevent infinite append
+                    current_strategy = ev.marketing_strategy or ""
+                    cleaned_strategy = "\n".join([
+                        line for line in current_strategy.split('\n') 
+                        if "**Poster:**" not in line
+                    ]).strip()
+                    
+                    ev.marketing_strategy = cleaned_strategy + f"\n\n**Poster:** {image_url}"
                     await session.commit()
                     print(f"Database updated for Event {eid}")
+                    ProgressTracker.set_progress(eid, 100, "Generation Complete")
         except Exception as e:
+            ProgressTracker.set_progress(eid, 0, f"Error: {str(e)}")
             print(f"Poster Generation Failed: {e}")
 
     # 4. Queue the task
-    background_tasks.add_task(background_worker, e_id, e_title, e_date, e_loc, e_desc)
+    background_tasks.add_task(background_worker, e_id, e_title, e_date, e_loc, e_desc, e_prize, e_org)
 
     return {"message": "Poster generation started. It will take ~30-60 seconds."}
+
+
+@router.get("/{event_id}/progress")
+async def get_generation_progress(event_id: int):
+    status = ProgressTracker.get_progress(event_id)
+    return status

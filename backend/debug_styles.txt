@@ -1,0 +1,236 @@
+
+--- Cyberpunk 2077 Launch Party ---
+AI Prompt: 
+Style Data: {}
+
+--- Valorant Invitational ---
+AI Prompt: { "visual_prompt":
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
+
+--- Valorant Invitational ---
+AI Prompt: Cinematic high-tech tactical arena interior with glowing teal and ruby red energy pulses. Sharp obsidian crystalline structures erupting from a polished dark floor. Atmospheric smoke and volumetric lighting filtering through futuristic geometric skylights. Hyper-realistic textures, 8k resolution, cinematic lighting, sharp focus on a central empty stage bathed in neon glow.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'Center'}
+
+--- Valorant Invitational ---
+AI Prompt: Cinematic wide shot of a futuristic tactical command center, glowing cyan and amber energy pulses flowing through glass floor panels, sharp geometric shards floating in mid-air, soft bokeh of a neon cityscape at night in the background, volumetric lighting, high-tech atmospheric haze, vibrant sparks, ultra-realistic digital art style.
+Style Data: {'theme': 'Cyberpunk / Tactical', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'Center'}
+
+--- Valorant Invitational ---
+AI Prompt: Cinematic wide shot of a futuristic tactical training ground with floating teal Radianite crystals and glowing blue energy fractures. Sharp anime-inspired art style, high-contrast lighting with deep shadows. Silhouette of a hooded tactical agent standing against a backdrop of a massive glowing teleportation gate. Unreal Engine 5 render, vibrant orange and teal color grading, floating debris, hyper-realistic textures, volumetric fog.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'Center'}
+
+--- Valorant Invitational ---
+AI Prompt: A futuristic tactical training ground filled with glowing teal radianite crystals floating in mid-air. Sharp anime-style character silhouettes in high-tech tactical gear standing against a vibrant sunset sky. Neon cyan and deep violet cinematic lighting casting long shadows across a polished concrete urban arena. Unreal Engine 5 render, volumetric fog, digital glitch particles, and sharp architectural lines.
+Style Data: {'theme': 'Cyberpunk Tactical', 'primary_color': '#00F6FF', 'secondary_color': '#FF4655', 'font_style': 'Tech', 'layout': 'Center'}
+
+--- Burger Eating Competition ---
+AI Prompt: A hyper-realistic, cinematic close-up of a massive, precarious tower of thirty dripping cheeseburgers with melting cheddar, crispy lettuce, and sesame seed buns. Warm studio lighting highlights glistening grease and rising steam. Background features a blurred retro 1950s diner with glowing neon red signs and chrome accents. High-speed photography style, vibrant saturated colors, Unreal Engine 5 render quality.
+Style Data: {'theme': 'Retro Americana', 'primary_color': '#FFD700', 'secondary_color': '#E63946', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Burger Eating Competition ---
+AI Prompt: Hyper-realistic macro photography of a towering, precarious stack of thirty juicy cheeseburgers on a rustic wooden table. Glistening melted cheddar cheese drips over charred beef patties and crisp green lettuce. Intense warm spotlighting creates dramatic highlights on sesame seed buns. Background features a soft-focus bokeh of a bustling American diner with steam rising in the air, 8k resolution, vivid colors.
+Style Data: {'theme': 'Grunge', 'primary_color': '#E63946', 'secondary_color': '#FFD700', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Burger Eating Competition ---
+AI Prompt: Hyper-realistic close-up of towering stacks of juicy cheeseburgers with melting cheddar, crispy lettuce, and sesame seed buns. Dynamic splashes of ketchup and mustard in mid-air. Warm, intense cinematic studio lighting with deep shadows. Vibrant commercial food photography style, macro lens detail, steam rising, high-energy atmosphere of a professional food challenge arena, 8k resolution, Unreal Engine 5 render depth.
+Style Data: {'theme': 'Grunge', 'primary_color': '#FFD700', 'secondary_color': '#B22222', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Burger Eating Competition ---
+AI Prompt: Hyper-realistic close-up of a massive, towering stack of thirty juicy cheeseburgers with melting cheddar, glistening beef patties, and toasted sesame buns. Steam rises from the meat. The background features a blurred, high-energy competition arena with dramatic stadium spotlights and a cheering crowd. Cinematic food photography, 8k resolution, vibrant saturated colors, grease droplets, and dripping secret sauce.
+Style Data: {'theme': 'Bold Commercial', 'primary_color': '#FFD700', 'secondary_color': '#D2122E', 'font_style': 'Bold', 'layout': 'Bottom'}
+
+--- Valorant Invitational ---
+AI Prompt: Cinematic wide shot of a futuristic urban combat zone inspired by tactical shooters. Floating glowing blue radianite shards hover amidst sharp, angular architecture. Dramatic teal and orange lighting illuminates a silhouetted tactical agent in a high-collar jacket. High-energy anime-style cel-shading combined with Unreal Engine 5 realism. Sparks, digital particles, and volumetric fog fill the air, creating an intense competitive atmosphere.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'Center'}
+
+--- Valorant Invitational ---
+AI Prompt: Cinematic low-angle shot of a futuristic tactical arena featuring floating teal Radianite crystals emitting a soft glow. Sharp geometric architecture with orange neon accents. In the foreground, a detailed tactical kunai embedded in a metallic surface. Volumetric smoke, vibrant energy trails, and sharp anime-inspired lighting. High-contrast Unreal Engine 5 render, ultra-detailed textures, professional gaming tournament atmosphere.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#ff4655', 'secondary_color': '#0f1923', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Valorant Invitational ---
+AI Prompt: Cinematic Unreal Engine 5 render of glowing teal radianite crystals floating over a futuristic urban rooftop at dusk. Sharp anime-influenced silhouettes of tactical agents in high-tech gear against a neon-lit skyline. Dramatic volumetric lighting, sparks of energy, embers, and sharp geometric lens flares. Highly detailed textures, vibrant teal and deep navy color palette, sharp tactical aesthetic, 8k resolution.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F5FF', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Invitational ---
+AI Prompt: Cinematic wide shot of a futuristic tactical courtyard inspired by Mediterranean architecture, floating glowing cyan Radianite crystals pulsating with ethereal energy, sharp cel-shaded anime aesthetic, Unreal Engine 5 render, dramatic teal and sunset orange volumetric lighting, silhouettes of tactical agents in the distance, cracked stone floors with glowing ley lines, high-tech holographic interfaces integrated into the environment, vibrant sparks, high contrast, 8k resolution, hyper-detailed textures.
+Style Data: {'theme': 'Cyberpunk Tech', 'primary_color': '#00F5FF', 'secondary_color': '#FF4655', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: A colossal, towering mountain of gourmet cheeseburgers with melting cheddar, glistening sesame seeds, and crispy lettuce, captured in a dramatic low-angle shot. Intense cinematic lighting with warm golden highlights and glowing embers swirling in the background. High-speed photography style, sharp focus on grease textures, steam rising from charred beef patties, vibrant saturated colors, hyper-realistic food photography, 8k resolution.
+Style Data: {'theme': 'Grunge', 'primary_color': '#FF0000', 'secondary_color': '#FFD700', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of floating teal radianite crystals and sharp geometric architecture. A silhouetted tactical agent stands in a high-tech training facility with glowing blue neon accents and orange sparks. Dramatic volumetric lighting, sharp cel-shaded anime aesthetic, vibrant teal and orange color palette, hyper-detailed textures, futuristic military environment, high-stakes competitive atmosphere, wide angle shot.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: A cinematic tactical battlefield scene featuring floating glowing blue radianite shards and sharp geometric architecture. Silhouettes of elite agents stand amidst swirling teal and magenta energy. High-contrast lighting with deep shadows, sharp anime-inspired character designs, and a futuristic urban environment inspired by tactical hero shooters. Unreal Engine 5 render, volumetric lighting, vibrant neon sparks, and intense atmospheric depth.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Futuristic tactical arena featuring floating glowing blue radianite crystals and sharp cinematic lighting. Silhouettes of agents with glowing teal and orange accents stand against a backdrop of a floating Venetian city with arched bridges. Sharp anime aesthetic, Unreal Engine 5 render, high-tech digital art, volumetric fog, vibrant energy trails, and metallic surfaces reflecting neon lights. Detailed tactical gear and sleek architectural geometry.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00FFCC', 'secondary_color': '#FF4655', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: Hyper-realistic close-up of a towering mountain of juicy cheeseburgers stacked precariously on a rustic wooden table. Melting golden cheddar cheese drips over charred beef patties and crisp sesame seed buns. Soft steam rises from the meat. In the background, blurred neon red and yellow diner lights create a vibrant, high-energy atmosphere. Cinematic lighting, 8k resolution, professional food photography.
+Style Data: {'theme': 'Grunge', 'primary_color': '#FFCC00', 'secondary_color': '#000000', 'font_style': 'Bold', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic tactical urban landscape featuring glowing blue Radianite crystals floating in the air. Sharp anime-style character silhouettes with flowing tactical gear and glowing abilities. High-contrast lighting with streaks of neon teal and vibrant orange. Floating debris, digital glitch particles, and a sharp, clean architectural background inspired by futuristic tactical arenas.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic tactical urban landscape featuring floating cyan Radianite crystals and sharp anime-style aesthetics. Dynamic blue and orange lighting illuminates silhouettes of tactical agents in tech-wear gear holding energy weapons. High-contrast environment with glowing neon energy trails, shattered stone debris, and a dramatic sky filled with hovering airships and swirling energy storms.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic wide shot of a futuristic tactical training ground featuring floating blue radianite crystals and glowing neon energy lines. Sharp anime-inspired aesthetic with high-contrast cinematic lighting and deep shadows. Detailed metallic surfaces, futuristic tactical gear, and a sprawling high-tech city skyline under a twilight sky. Unreal Engine 5 render, vibrant cyan and magenta highlights, sharp edges, professional gaming atmosphere.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F9FF', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of a tactical urban battlefield featuring glowing blue radianite crystals floating in mid-air. Sharp anime-inspired silhouettes of tactical agents in high-tech gear holding futuristic weapons. Vibrant turquoise and orange sparks flying across a dusk setting with heavy volumetric fog and dramatic rim lighting. High-contrast, sharp edges, digital art style, immersive esports atmosphere.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00FFCC', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of floating turquoise radianite crystals glowing with intense energy. Sharp anime-style tactical agents standing in a rain-slicked futuristic urban alleyway. Neon cyan and deep violet atmospheric lighting, volumetric smoke, high-tech weaponry with glowing accents. Explosive sparks and crystalline fragments floating in the air, dramatic perspective, hyper-detailed textures, 8k resolution, tactical shooter atmosphere.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: Hyper-realistic macro photography of a massive, towering stack of thirty juicy cheeseburgers with melting cheddar, crispy bacon, and glistening sesame seed buns. Warm studio lighting highlights the texture of the seared beef patties and fresh lettuce. In the background, a blurred competitive eating arena with bright stadium lights and flying confetti. Intensely detailed food styling, vibrant colors, 8k resolution, commercial advertising aesthetic.
+Style Data: {'theme': 'Grunge', 'primary_color': '#FFCC00', 'secondary_color': '#D32F2F', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Legends Hackathon ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic digital sanctuary. Floating holographic glowing code snippets in neon cyan and electric purple. A central crystalline server monolith emitting a golden pulse. Intricate fiber optic cables snaking across a dark metallic floor. Volumetric lighting, sharp tech aesthetic, digital rain, and architectural patterns of integrated circuits. High contrast, hyper-detailed, 8k resolution.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00FFFF', 'secondary_color': '#0A0A0A', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic high-tech laboratory, floating translucent holographic code snippets and complex data visualizations in electric blue and gold, a sleek ergonomic workstation with glowing mechanical keyboards, sharp neon lighting, dark metallic surfaces, bokeh background of a sprawling digital cityscape, hyper-realistic textures, volumetric lighting, 8k resolution, intricate circuitry patterns etched into the walls.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00E5FF', 'secondary_color': '#0A0A0A', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: A cinematic high-octane battlefield inspired by Valorant, featuring glowing blue radianite crystals floating in a futuristic urban courtyard. Sharp anime-style silhouettes of tactical agents in mid-action, dynamic sparks, and neon embers. Dramatic volumetric lighting, deep shadows, teal and orange color grading, ultra-detailed Unreal Engine 5 render, sharp focus, vibrant tactical energy effects.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic high-tech sanctum. Cascading digital rain of emerald green binary code flows over floating holographic circuit boards and glowing mechanical keyboards. A central translucent throne constructed from intricate motherboard patterns sits amidst a swirl of data fragments and neon blue electricity. Dramatic volumetric lighting, deep shadows, ultra-detailed textures, sharp focus, 8k resolution, cyberpunk aesthetic.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00FFCC', 'secondary_color': '#0A0A12', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: A towering stack of glistening, juicy gourmet burgers with melting cheddar cheese, crispy bacon, and vibrant lettuce, piled high on a rustic wooden table. Warm cinematic lighting, shallow depth of field with a blurred retro American diner background featuring neon glows. High-speed photography capturing scattered sesame seeds and steam rising, hyper-realistic textures, commercial food styling, saturated reds and golds.
+Style Data: {'theme': 'Retro', 'primary_color': '#FFD700', 'secondary_color': '#D32F2F', 'font_style': 'Bold', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: Hyper-realistic Unreal Engine 5 render of a futuristic digital arena. Massive holographic interfaces float in the air, displaying intricate glowing data streams and complex geometric patterns in cyan and white. Volumetric blue lighting cuts through dense cinematic fog. Sharp tech-noir architecture with pulsing fiber optic cables. A central glowing data core radiates intense digital energy and shimmering particles.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F0FF', 'secondary_color': '#050505', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: { "visual_prompt": "Hyper-realistic macro shot of a massive, towering stack of thirty juicy cheeseburgers with melting cheddar and sesame seeds. Dramatic cinematic lighting
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
+
+--- Burger Eating Competition ---
+AI Prompt: A towering stack of thirty juicy, glistening cheeseburgers with melting cheddar cheese and crispy bacon. Steam rises from the hot meat. The background is a blurred, high-energy American diner with warm, golden studio lighting. Macro photography style, vibrant colors, hyper-realistic textures of the charred beef and soft sesame buns, 8k resolution, commercial food photography.
+Style Data: {'theme': 'Grunge', 'primary_color': '#FFD700', 'secondary_color': '#C41E3A', 'font_style': 'Bold', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: { "visual_prompt": "A towering, gravity-defying stack of thirty juicy cheeseburgers with melting golden cheddar, glistening sesame seed buns, and crisp lettuce.
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
+
+--- Burger Eating Competition ---
+AI Prompt: { "visual_prompt": "Cinematic macro shot of massive, towering stacks of gourmet cheeseburgers on a rustic wooden table. Molten cheddar cheese oozing between thick, seared beef patties. Fresh green lettuce and vibrant tomato slices. Steam rising in a sun-drenched retro American diner. High-speed photography capturing a splash of ketchup. Intense, warm studio lighting,
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic tactical combat zone. Floating glowing blue Radianite crystals hover amidst sharp geometric architecture and metallic surfaces. Silhouettes of tactical agents stand in a high-contrast environment with vibrant teal and orange volumetric lighting. Sharp anime aesthetic, intense sparks, and digital particle effects. A high-tech urban landscape with neon accents and shattered glass textures.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00FFCC', 'secondary_color': '#FF4655', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: Towering stacks of gargantuan, glistening cheeseburgers with molten cheddar dripping over thick flame-grilled beef patties and crispy bacon. Sesame seeds and droplets of red ketchup suspended in mid-air around a rustic wooden table. Intense, warm cinematic lighting with sharp shadows, high-speed macro photography style, vibrant saturated colors, blurred background of a cheering crowd in a retro American diner, hyper-realistic textures.
+Style Data: {'theme': 'Grunge', 'primary_color': '#FF0000', 'secondary_color': '#FFCC00', 'font_style': 'Bold', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Floating teal radianite shards suspended in a futuristic urban arena, sharp stylized anime aesthetic, glowing neon ability trails in orange and blue, tactical agents in high-tech gear standing in a cinematic low-angle pose, atmospheric smoke and particle effects, dramatic lighting, vibrant cel-shaded textures, high contrast, Unreal Engine 5 render, highly detailed tactical environment.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: Cinematic wide shot of a futuristic data sanctum, glowing ethereal blue hextech energy flowing through crystalline circuitry and floating obsidian pillars. Silhouetted legendary figures standing before massive holographic code displays and shimmering digital interfaces. Unreal Engine 5 render, hyper-detailed cyberpunk architecture, volumetric lighting, deep navy and electric cyan color palette, floating data particles, sharp technological aesthetic, intense cinematic atmosphere.
+Style Data: {'theme': 'Cyberpunk Tech', 'primary_color': '#00FFFF', 'secondary_color': '#0A0A0F', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: A cinematic high-tech sanctuary filled with glowing cyan holographic code streams cascading from a monolithic obsidian server. Intricate neon circuit patterns etched into a dark metallic floor. Cinematic lighting with deep shadows and vibrant electric blue accents. Unreal Engine 5 render style, hyper-realistic textures, volumetric fog, and floating digital data fragments creating a sense of immense computational power.
+Style Data: {'theme': 'Tech', 'primary_color': '#00F2FF', 'secondary_color': '#050505', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic tactical urban courtyard. Floating cyan radianite crystals emit a soft neon glow against sharp architectural shadows. In the foreground, stylized silhouettes of a wind-manipulating agent and a fiery duelist stand poised for battle. Shards of glass and orange sparks fly through the air. Sharp anime-inspired cel-shading, high contrast, dramatic volumetric lighting, vibrant tactical aesthetic.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic high-tech command center. Glowing holographic code streams and binary data flowing through the air in vibrant cyan and electric violet. A lone, silhouetted figure sitting at a multi-monitor glowing workstation. Intricate circuit board patterns etched into the metallic walls. Moody volumetric lighting, sharp digital aesthetic, hyper-realistic textures, 8k resolution.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00FFFF', 'secondary_color': '#0A0A0A', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: High-octane food photography featuring a towering stack of glistening cheeseburgers with melting golden cheddar, crispy bacon, and toasted sesame buns. Steam rises in a cinematic, slightly chaotic diner kitchen. Dramatic warm studio lighting highlights textures of seared meat and fresh vegetables. In the blurred background, a vibrant, cheering crowd creates an atmosphere of intense competition and high-speed excitement.
+Style Data: {'theme': 'Grunge', 'primary_color': '#E63946', 'secondary_color': '#FFB703', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Legends Hackathon ---
+AI Prompt: A cinematic Unreal Engine 5 render of a futuristic digital coliseum. Glowing neon blue and gold circuit patterns pulse across floating translucent screens displaying complex cascading binary code. In the center, a silhouetted figure stands before a massive holographic terminal. Atmospheric volumetric lighting, sharp technological details, deep shadows, and hyper-realistic metallic textures create an epic, high-stakes atmosphere of digital mastery.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F2FF', 'secondary_color': '#050505', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: { "visual_prompt": "A massive, towering stack of thirty gourmet cheeseburgers with glistening, juicy beef patties, dripping melted cheddar cheese, and golden sesame seed buns
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
+
+--- Legends Hackathon ---
+AI Prompt: A high-tech futuristic command center with multiple glowing holographic screens displaying intricate cascading lines of golden source code. A sleek, ergonomic workstation with a backlit mechanical keyboard glowing in electric cyan. Dark atmospheric environment with cinematic volumetric lighting, floating data particles, and deep blue shadows. Photorealistic 8k resolution, Unreal Engine 5 render, sharp focus on digital architecture.
+Style Data: {'theme': 'Tech', 'primary_color': '#00F0FF', 'secondary_color': '#0A0A0A', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: A towering stack of glistening cheeseburgers with melting cheddar, sesame seed buns, and fresh lettuce, centered on a rustic wooden table. High-speed splashes of ketchup and mustard frozen in mid-air. Intense stadium spotlights creating dramatic rim lighting and deep shadows. Cinematic food photography, ultra-detailed textures, steam rising, vibrant reds and golden yellows, 8k resolution, commercial advertising style.
+Style Data: {'theme': 'Grunge', 'primary_color': '#E63946', 'secondary_color': '#FFB703', 'font_style': 'Bold', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic wide shot of a futuristic tactical urban environment inspired by Ascent, featuring floating luminous blue Radianite crystals and emerald green toxic gas clouds. Sharp cel-shaded anime aesthetic, high-contrast dramatic lighting, glowing neon accents, and silhouettes of tactical agents in action. Unreal Engine 5 render style, hyper-detailed textures, volumetric fog, vibrant sparks, and crystalline debris floating in mid-air.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Legends Hackathon ---
+AI Prompt: Cinematic wide shot of a futuristic high-tech laboratory, glowing blue and violet holographic data streams flowing through the air, intricate lines of code floating in 3D space, silhouettes of focused individuals at sleek workstations, Unreal Engine 5 render, hyper-realistic, volumetric lighting, dark atmosphere with vibrant neon circuitry patterns, sharp focus on digital architecture and glowing fiber optic cables.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F0FF', 'secondary_color': '#0A0A0A', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: A cinematic Unreal Engine 5 render of a tactical urban battlefield featuring floating teal Radianite crystals and sharp geometric architecture. Glowing blue energy pulses through the air. In the foreground, a stylized tactical knife and a futuristic smoke grenade rest on a metallic ledge. Atmospheric lighting with deep shadows and vibrant cyan highlights, sharp anime-inspired aesthetic, high-tech military environment.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#ff4655', 'secondary_color': '#0f1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Burger Eating Competition ---
+AI Prompt: { "visual_prompt": "Hyper-realistic cinematic close-up of an impossibly tall, precarious tower of thirty gourmet cheeseburgers with melting golden cheese,
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
+
+--- Burger Eating Competition ---
+AI Prompt: { "visual_prompt": "A towering mountain of glistening double cheeseburgers stacked precariously on a rustic wooden table. Macro photography style, melting golden cheddar cheese dripping down sides, crispy lettuce, toasted sesame seed buns. Warm cinematic lighting with steam rising. In the background, a blurred, cheering crowd in a retro 1950s diner setting. High-speed photography capturing a splash of ketchup. Vivid, saturated colors.", "design_style": { "theme": "Retro Diner Grunge", "primary_color": "#D62828", "secondary_
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
+
+--- Legends Hackathon ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic glass-walled server room. Glowing blue and cyan circuit patterns pulse across the floor and walls. In the center, a holographic data sphere rotates with cascading lines of golden code. Atmospheric volumetric lighting, sharp focus on mechanical details, dark obsidian surfaces reflecting neon lights, epic high-stakes tech atmosphere, wide-angle perspective.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00F0FF', 'secondary_color': '#050505', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Cinematic Unreal Engine 5 render of a futuristic urban tactical combat zone. Floating blue radianite crystals emitting a soft glow, sharp anime-inspired lighting, and glowing teal energy trails. In the background, silhouettes of tactical agents in high-tech gear stand amidst concrete structures and neon-lit doorways. Atmospheric smoke, embers, and sharp geometric lens flares, hyper-detailed textures, 8k resolution.
+Style Data: {'theme': 'Tech', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Valorant Tournament ---
+AI Prompt: Unreal Engine 5 render of glowing cyan radianite crystals floating amidst jagged geometric structures in a futuristic tactical arena. A silhouette of a wind-wielding agent dashes through swirling white smoke and teal sparks. Sharp cinematic lighting, high-contrast shadows, vibrant neon accents, cel-shaded anime aesthetic, detailed textures of carbon fiber tactical gear and metallic surfaces, atmospheric depth.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- GreenHouse Event ---
+AI Prompt: A breathtaking interior view of a modern architectural greenhouse with towering glass panels and geometric matte black steel frames. Sunlight filters through the glass, creating dramatic volumetric god rays and illuminating lush tropical ferns, giant monstera leaves, and vibrant blooming orchids. Soft mist hangs in the air. Hyper-realistic, 8k resolution, cinematic lighting, botanical aesthetic, vibrant greens and deep earthy tones, Unreal Engine 5 render style.
+Style Data: {'theme': 'Modern Eco', 'primary_color': '#00FF41', 'secondary_color': '#FFFFFF', 'font_style': 'Modern', 'layout': 'TopLeft'}
+
+--- Sandwich Eating Competition ---
+AI Prompt: Hyper-realistic macro photography of a massive, multi-layered deli sandwich tower exploding with fresh ingredients. Slices of toasted artisanal bread, cascading melted cheddar, crisp green lettuce, and juicy heirloom tomatoes. Dynamic motion with crumbs and droplets of honey mustard suspended in mid-air. High-speed photography, bright stadium lighting, vibrant saturated colors, shallow depth of field, 8k resolution, professional commercial food photography.
+Style Data: {'theme': 'Grunge', 'primary_color': '#FFD700', 'secondary_color': '#8B0000', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Burger Eating Competition ---
+AI Prompt: High-octane macro shot of a massive, towering stack of thirty juicy gourmet cheeseburgers, melting yellow cheddar cheese dripping down the sides, crispy lettuce, toasted sesame seed buns, steam rising in a vibrant retro American diner setting, warm neon red and yellow lighting, shallow depth of field, cinematic food photography, 8k resolution, hyper-realistic textures, vibrant saturated colors, grease glistening under studio lights.
+Style Data: {'theme': 'Vintage Diner / Grunge', 'primary_color': '#FFD700', 'secondary_color': '#D32F2F', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Sumo Wrestling ---
+AI Prompt: Cinematic low-angle shot of two massive sumo wrestlers facing off in a traditional earthen dohyo ring. Fine sand grains kicked up in the air, dramatic side-lighting highlighting powerful muscular forms and traditional silk mawashi. Background features blurred wooden temple pillars and hanging shide paper. High-contrast, hyper-realistic photography, 8k resolution, intense atmosphere, salt crystals shimmering in the light.
+Style Data: {'theme': 'Traditional Japanese', 'primary_color': '#C41E3A', 'secondary_color': '#000000', 'font_style': 'Bold', 'layout': 'Center'}

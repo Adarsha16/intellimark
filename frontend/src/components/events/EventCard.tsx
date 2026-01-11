@@ -1,4 +1,5 @@
-import { Calendar, MapPin, Pencil, Trash2, Image as ImageIcon, Loader2, Handshake, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, MapPin, Pencil, Trash2, Image as ImageIcon, Loader2, Handshake, Users, Banknote, Building2 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { motion } from 'framer-motion';
@@ -6,7 +7,7 @@ import { type Event } from '../../types';
 
 interface EventCardProps {
     event: Event;
-    isGenerating: boolean;
+    generationStartTime?: number; // Timestamp if generating, undefined otherwise
     onEdit: (event: Event) => void;
     onDelete: (id: number) => void;
     onGeneratePoster: (id: number) => void;
@@ -15,11 +16,46 @@ interface EventCardProps {
 
 const API_BASE_URL = 'http://localhost:8000';
 
-export default function EventCard({ event, isGenerating, onEdit, onDelete, onGeneratePoster, onMatch }: EventCardProps) {
+export default function EventCard({ event, generationStartTime, onEdit, onDelete, onGeneratePoster, onMatch }: EventCardProps) {
+    const [progress, setProgress] = useState(0);
+    const [statusText, setStatusText] = useState("Initializing...");
+
+    useEffect(() => {
+        if (!generationStartTime) {
+            setProgress(0);
+            return;
+        }
+
+        // Poll for REAL progress
+        const interval = setInterval(async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/events/${event.id}/progress`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (typeof data.progress === 'number') {
+                        setProgress(data.progress);
+                        setStatusText(data.message || "Processing...");
+
+                        // Stop if done
+                        if (data.progress >= 100) clearInterval(interval);
+                    }
+                }
+            } catch (e) {
+                console.error("Progress poll failed", e);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [generationStartTime, event.id]);
 
     const getPosterUrl = (strategy?: string) => {
         if (!strategy || !strategy.includes("**Poster:**")) return null;
-        return `${API_BASE_URL}${strategy.split('**Poster:** ')[1].trim()}`;
+        // Robust parsing: Split by marker, take the LAST part to ensure we get the latest generation
+        // This handles cases where multiple poster lines might have accumulated.
+        const parts = strategy.split('**Poster:**');
+        const afterMarker = parts[parts.length - 1].trim();
+        const urlPart = afterMarker.split('\n')[0].trim();
+        return `${API_BASE_URL}${urlPart}`;
     };
 
     const posterUrl = getPosterUrl(event.marketing_strategy);
@@ -63,13 +99,36 @@ export default function EventCard({ event, isGenerating, onEdit, onDelete, onGen
                         <Users className="w-4 h-4 mr-3 text-indigo-500" />
                         Capacity: {event.capacity}
                     </div>
+                    {event.prize_pool && (
+                        <div className="flex items-center text-sm text-slate-700">
+                            <Banknote className="w-4 h-4 mr-3 text-indigo-500" />
+                            Prize: {event.prize_pool}
+                        </div>
+                    )}
+                    {event.organizer_name && (
+                        <div className="flex items-center text-sm text-slate-700">
+                            <Building2 className="w-4 h-4 mr-3 text-indigo-500" />
+                            Org: {event.organizer_name}
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-3 mt-auto">
-                    {isGenerating ? (
-                        <Button disabled variant="outline" className="w-full gap-2 border-violet-100 bg-violet-50 text-violet-400">
-                            <Loader2 className="w-4 h-4 animate-spin" /> Generating...
-                        </Button>
+                    {generationStartTime ? (
+                        <div className="space-y-2">
+                            <Button disabled variant="outline" className="w-full gap-2 border-violet-100 bg-violet-50 text-violet-500">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                {statusText}
+                            </Button>
+                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                <motion.div
+                                    className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${progress}%` }}
+                                    transition={{ duration: 0.5 }}
+                                />
+                            </div>
+                        </div>
                     ) : (
                         <Button variant="outline" className="w-full gap-2 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-200" onClick={() => onGeneratePoster(event.id)}>
                             <ImageIcon className="w-4 h-4" />
