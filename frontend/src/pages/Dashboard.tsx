@@ -281,7 +281,8 @@ const Dashboard = () => {
                 stats: stats,
                 strategy: strategyReport
             });
-            window.open(`http://localhost:8000${res.data.url}`, '_blank');
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            window.open(`${apiUrl}${res.data.url}`, '_blank');
             toast.success("Report Downloaded");
         } catch (e) {
             toast.error("Export failed");

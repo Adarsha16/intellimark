@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Car, Bike, Footprints } from 'lucide-react'; // Added icons
+import { ArrowLeft, Car, Bike, Footprints, RefreshCw, Navigation, ChevronRight, MapPin } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -51,22 +51,77 @@ export default function DistanceMap() {
     const [routeCoords, setRouteCoords] = useState<{ lat: number; lng: number }[] | null>(null);
     const [stats, setStats] = useState<{ distance: number, duration: number } | null>(null);
     const [mode, setMode] = useState<TransportMode>('driving');
+    const [instructions, setInstructions] = useState<Array<{
+        distance: number;
+        duration: number;
+        instruction: string;
+        type: number;
+        modifier?: string;
+    }>>([]);
+    const [isRecalculating, setIsRecalculating] = useState(false);
 
-    // Fetch Route from OSRM
+    // Convert OSRM maneuver types to readable instructions
+    const getInstructionText = useCallback((type: number, modifier?: string, roadName?: string): string => {
+        const road = roadName ? ` onto ${roadName}` : '';
+
+        // OSRM maneuver types: https://github.com/Project-OSRM/osrm-backend/blob/master/docs/http.md
+        const instructions: { [key: number]: string } = {
+            0: 'Unknown',
+            1: 'Start',
+            2: 'Go straight',
+            3: 'Turn right',
+            4: 'Turn left',
+            5: 'Slight right',
+            6: 'Slight left',
+            7: 'Sharp right',
+            8: 'Sharp left',
+            9: 'U-turn',
+            10: 'U-turn',
+            11: 'Arrive',
+            12: 'Enter roundabout',
+            13: 'Exit roundabout',
+            14: 'Change lane',
+            15: 'Continue',
+        };
+
+        let instruction = instructions[type] || 'Continue';
+
+        // Add modifier for more detail
+        if (modifier) {
+            const modifiers: { [key: string]: string } = {
+                'left': 'left',
+                'right': 'right',
+                'sharp left': 'sharp left',
+                'sharp right': 'sharp right',
+                'slight left': 'slight left',
+                'slight right': 'slight right',
+                'straight': 'straight',
+                'uturn': 'U-turn'
+            };
+
+            if (modifiers[modifier] && instruction === 'Continue') {
+                instruction = `Turn ${modifiers[modifier]}`;
+            }
+        }
+
+        return instruction + road;
+    }, []);
+
+    // Fetch Route from OSRM with turn-by-turn instructions
     const fetchRoute = useCallback(async (start: { lat: number, lng: number }, end: { lat: number, lng: number }, mode: TransportMode) => {
+        setIsRecalculating(true);
         try {
             // Select appropriate OSRM server/profile
             let url = '';
             // Note: OSRM demo server only supports 'driving'. 
             // We use routing.openstreetmap.de for others (standard public instances)
+            // Add steps=true to get turn-by-turn instructions
             if (mode === 'driving') {
-                url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson`;
+                url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson&steps=true`;
             } else if (mode === 'cycling') {
-                // Often routed-bike uses 'driving' as the profile name in the URL path for "default profile of this instance"
-                url = `https://routing.openstreetmap.de/routed-bike/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson`;
+                url = `https://routing.openstreetmap.de/routed-bike/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson&steps=true`;
             } else if (mode === 'walking') {
-                // Similarly for foot
-                url = `https://routing.openstreetmap.de/routed-foot/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson`;
+                url = `https://routing.openstreetmap.de/routed-foot/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson&steps=true`;
             }
 
             const res = await fetch(url);
@@ -83,11 +138,41 @@ export default function DistanceMap() {
                     distance: route.distance, // meters
                     duration: route.duration  // seconds
                 });
+
+                // Extract turn-by-turn instructions from legs
+                const allSteps: Array<{
+                    distance: number;
+                    duration: number;
+                    instruction: string;
+                    type: number;
+                    modifier?: string;
+                }> = [];
+
+                if (route.legs && route.legs.length > 0) {
+                    route.legs.forEach((leg: any) => {
+                        if (leg.steps) {
+                            leg.steps.forEach((step: any) => {
+                                const instruction = getInstructionText(step.maneuver.type, step.maneuver.modifier, step.name);
+                                allSteps.push({
+                                    distance: step.distance,
+                                    duration: step.duration,
+                                    instruction: instruction,
+                                    type: step.maneuver.type,
+                                    modifier: step.maneuver.modifier
+                                });
+                            });
+                        }
+                    });
+                }
+
+                setInstructions(allSteps);
             }
         } catch (e) {
             console.error("Routing error:", e);
+        } finally {
+            setIsRecalculating(false);
         }
-    }, []);
+    }, [getInstructionText]);
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
@@ -123,21 +208,39 @@ export default function DistanceMap() {
         return `${(meters / 1000).toFixed(1)} km`;
     };
 
+    const handleRecalculate = () => {
+        if (myPos) {
+            fetchRoute(myPos, { lat: targetLat, lng: targetLng }, mode);
+        }
+    };
+
     return (
-        <div className="relative w-full h-screen bg-slate-100 flex flex-col">
+        <div className="relative w-full h-screen bg-white flex flex-col overflow-hidden">
             {/* Header Overlay */}
             <div className="absolute top-4 left-4 z-[500] w-[90%] flex flex-col gap-2 pointer-events-none">
-                <div className="flex justify-between items-center w-full">
+                <div className="flex justify-between items-center w-full gap-2">
                     <Button onClick={() => navigate(-1)} variant="outline" className="bg-white shadow pointer-events-auto">
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back
                     </Button>
 
-                    {stats && (
-                        <div className="bg-white px-4 py-2 rounded-lg shadow font-mono text-sm font-bold border border-slate-200 pointer-events-auto flex gap-4">
-                            <span>{formatDistance(stats.distance)}</span>
-                            <span className="text-blue-600">{formatDuration(stats.duration)}</span>
-                        </div>
-                    )}
+                    <div className="flex gap-2 items-center">
+                        {stats && (
+                            <div className="bg-white px-4 py-2 rounded-lg shadow font-mono text-sm font-bold border border-slate-200 pointer-events-auto flex gap-4">
+                                <span>{formatDistance(stats.distance)}</span>
+                                <span className="text-blue-600">{formatDuration(stats.duration)}</span>
+                            </div>
+                        )}
+
+                        <Button
+                            onClick={handleRecalculate}
+                            variant="outline"
+                            className="bg-white shadow pointer-events-auto"
+                            disabled={isRecalculating || !myPos}
+                        >
+                            <RefreshCw className={`w-4 h-4 mr-2 ${isRecalculating ? 'animate-spin' : ''}`} />
+                            Recalculate
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Mode Switcher */}
@@ -167,8 +270,13 @@ export default function DistanceMap() {
             </div>
 
             {/* Real Map */}
-            <div className="flex-1 relative z-0">
-                <MapContainer center={[targetLat, targetLng]} zoom={13} style={{ height: '100%', width: '100%' }}>
+            <div className="flex-1 relative z-0 bg-white min-h-0">
+                <MapContainer
+                    center={[targetLat, targetLng]}
+                    zoom={13}
+                    style={{ height: '100%', width: '100%' }}
+                    className="w-full h-full"
+                >
                     <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -205,15 +313,67 @@ export default function DistanceMap() {
                 </MapContainer>
             </div>
 
-            <div className="bg-white p-6 border-t border-slate-200 z-10 relative">
-                <h3 className="font-bold text-lg mb-2">
-                    Navigation: {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                </h3>
-                <p className="text-slate-500 text-sm">
-                    {stats
-                        ? `Estimated travel time: ${formatDuration(stats.duration)}.`
-                        : "Calculating route..."}
-                </p>
+            {/* Bottom Panel with Directions */}
+            <div className="bg-white border-t border-slate-200 z-10 relative flex flex-col" style={{ maxHeight: '40vh' }}>
+                {/* Summary Bar */}
+                <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                        <h3 className="font-bold text-lg">
+                            {title}
+                        </h3>
+                        <p className="text-slate-500 text-sm">
+                            {stats
+                                ? `${formatDistance(stats.distance)} • ${formatDuration(stats.duration)}`
+                                : "Calculating route..."}
+                        </p>
+                    </div>
+                    <Button
+                        onClick={() => navigate(`/ar-view?lat=${targetLat}&lng=${targetLng}&title=${encodeURIComponent(title)}`)}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+                    >
+                        <Navigation className="w-4 h-4" />
+                        AR View
+                    </Button>
+                </div>
+
+                {/* Turn-by-Turn Directions */}
+                {instructions.length > 0 && (
+                    <div className="flex-1 overflow-y-auto p-4">
+                        <div className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700">
+                            <MapPin className="w-4 h-4" />
+                            <span>Turn-by-Turn Directions</span>
+                        </div>
+                        <div className="space-y-2">
+                            {instructions.map((step, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors border border-slate-100"
+                                >
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs mt-0.5">
+                                        {index + 1}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="font-semibold text-slate-900 text-sm">
+                                            {step.instruction}
+                                        </div>
+                                        <div className="text-xs text-slate-500 mt-1 flex items-center gap-2">
+                                            <span>{formatDistance(step.distance)}</span>
+                                            <span>•</span>
+                                            <span>{formatDuration(step.duration)}</span>
+                                        </div>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {instructions.length === 0 && !isRecalculating && myPos && (
+                    <div className="p-4 text-center text-slate-500 text-sm">
+                        No directions available
+                    </div>
+                )}
             </div>
         </div>
     );
