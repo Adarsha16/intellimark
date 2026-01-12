@@ -8,6 +8,7 @@ from datetime import datetime
 from app.db.session import get_db
 from app.models.user import User
 from app.models.admin import ActivityLog
+from app.models.event import Event
 from app.services.strategy_agent import generate_club_strategy
 from app.services.pdf_generator import create_executive_pdf
 from app.api.deps import get_current_admin
@@ -143,3 +144,70 @@ async def trigger_backup(admin: User = Depends(get_current_admin)):
     return {
         "message": "Backup started successfully. You will receive an email upon completion."
     }
+
+
+@router.get("/stats/trend")
+async def get_activity_trend(
+    db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)
+):
+    """
+    Returns monthly count of new Events and new Users (Members) for the last 6 months.
+    """
+    from sqlalchemy import func, extract
+    import datetime
+
+    # We will get data for the last 6 months
+    today = datetime.date.today()
+    six_months_ago = today - datetime.timedelta(days=180)
+
+    # 1. Aggregate Events by Month
+    events_result = await db.execute(
+        select(
+            func.to_char(Event.created_at, 'Mon').label("month"),
+            func.count(Event.id).label("count")
+        )
+        .where(Event.created_at >= six_months_ago)
+        .group_by(func.to_char(Event.created_at, 'Mon'))
+    )
+    
+    # 2. Aggregate Users by Month
+    users_result = await db.execute(
+        select(
+            func.to_char(User.created_at, 'Mon').label("month"),
+            func.count(User.id).label("count")
+        )
+        .where(User.created_at >= six_months_ago)
+        .group_by(func.to_char(User.created_at, 'Mon'))
+    )
+
+    # Process results into a dictionary
+    data_map = {}
+    
+    # Initialize with last 6 months (empty)
+    for i in range(5, -1, -1):
+        d = today - datetime.timedelta(days=i*30)
+        month_name = d.strftime("%b")
+        data_map[month_name] = {"month": month_name, "events": 0, "users": 0, "sort": d}
+
+    # Fill Events
+    for row in events_result.all():
+        m = row.month
+        c = row.count
+        if m in data_map:
+            data_map[m]["events"] = c
+    
+    # Fill Users
+    for row in users_result.all():
+        m = row.month
+        c = row.count
+        if m in data_map:
+            data_map[m]["users"] = c
+
+    # Sort by date
+    trend_data = sorted(data_map.values(), key=lambda x: x["sort"])
+
+    # Clean up sort key for response
+    for item in trend_data:
+        del item["sort"]
+
+    return trend_data

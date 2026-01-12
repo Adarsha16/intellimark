@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    CartesianGrid, Cell, Area, AreaChart
+    CartesianGrid, Cell, Legend
 } from 'recharts';
 import {
     Briefcase, Users, Calendar, DollarSign, RefreshCw,
@@ -11,15 +11,8 @@ import {
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
-// Mock Activity Trend Data (simulating monthly event/sponsor growth)
-const ACTIVITY_TREND = [
-    { month: 'Jan', events: 2, sponsors: 3 },
-    { month: 'Feb', events: 4, sponsors: 5 },
-    { month: 'Mar', events: 3, sponsors: 4 },
-    { month: 'Apr', events: 6, sponsors: 7 },
-    { month: 'May', events: 8, sponsors: 9 },
-    { month: 'Jun', events: 7, sponsors: 11 },
-];
+// Real data will be fetched
+
 
 // --- Types ---
 interface RealDataStats {
@@ -63,6 +56,7 @@ const Dashboard = () => {
     });
 
     const [chartFundingByStatus, setChartFundingByStatus] = useState<any[]>([]);
+    const [activityTrend, setActivityTrend] = useState<any[]>([]);
     const [recentLogs, setRecentLogs] = useState<ActivityLog[]>([]);
 
     // --- AI Strategy State ---
@@ -89,11 +83,12 @@ const Dashboard = () => {
     const fetchData = async () => {
         setRefreshing(true);
         try {
-            const [sponsorsRes, eventsRes, usersRes, logsRes] = await Promise.allSettled([
+            const [sponsorsRes, eventsRes, usersRes, logsRes, trendRes] = await Promise.allSettled([
                 api.get('/sponsors/'),
                 api.get('/events/'),
                 api.get('/admin/users'),
-                api.get('/admin/logs')
+                api.get('/admin/logs'),
+                api.get('/admin/stats/trend')
             ]);
 
             // 1. Sponsors & Revenue
@@ -127,6 +122,10 @@ const Dashboard = () => {
             });
 
             setChartFundingByStatus(processFundingChart(sponsors));
+
+            if (trendRes.status === 'fulfilled') {
+                setActivityTrend(trendRes.value.data);
+            }
 
         } catch (error) {
             console.error(error);
@@ -334,45 +333,53 @@ const Dashboard = () => {
                     </div>
                     <div>
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white">Activity Trend</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Event & Sponsor growth over time</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Event & Member growth over time</p>
                     </div>
                 </div>
 
-                <div className="h-64 w-full">
+                <div className="h-72 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={ACTIVITY_TREND} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorEvents" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorSponsors" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                            <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#64748b' }} />
-                            <YAxis tick={{ fontSize: 12, fill: '#64748b' }} />
+                        <BarChart data={activityTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                            <XAxis
+                                dataKey="month"
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 12, fill: '#64748b' }}
+                                dy={10}
+                            />
+                            <YAxis
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 12, fill: '#64748b' }}
+                            />
                             <Tooltip
+                                cursor={{ fill: '#f8fafc' }}
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                             />
-                            <Area type="monotone" dataKey="events" stroke="#6366f1" fillOpacity={1} fill="url(#colorEvents)" strokeWidth={2} name="Events" />
-                            <Area type="monotone" dataKey="sponsors" stroke="#10b981" fillOpacity={1} fill="url(#colorSponsors)" strokeWidth={2} name="Sponsors" />
-                        </AreaChart>
+                            <Legend
+                                wrapperStyle={{ paddingTop: '20px' }}
+                                iconType="circle"
+                            />
+                            <Bar
+                                dataKey="events"
+                                name="Events"
+                                fill="#6366f1"
+                                radius={[4, 4, 0, 0]}
+                                barSize={32}
+                            />
+                            <Bar
+                                dataKey="users"
+                                name="New Members"
+                                fill="#10b981"
+                                radius={[4, 4, 0, 0]}
+                                barSize={32}
+                            />
+                        </BarChart>
                     </ResponsiveContainer>
                 </div>
 
-                <div className="flex justify-center gap-6 mt-4">
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-                        <span className="text-sm text-slate-600 dark:text-slate-400">Events</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                        <span className="text-sm text-slate-600 dark:text-slate-400">Sponsors</span>
-                    </div>
-                </div>
+                {/* Legend is now built-in to the chart, removing custom legend */}
             </motion.div>
 
             {/* --- AI Strategy Section (Full Width) --- */}
