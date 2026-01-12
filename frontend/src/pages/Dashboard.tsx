@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    CartesianGrid, Cell, Legend
+    CartesianGrid, Cell, Legend, LineChart, Line
 } from 'recharts';
 import {
     Briefcase, Users, Calendar, DollarSign, RefreshCw,
@@ -119,7 +119,7 @@ const Dashboard = () => {
     const fetchData = async () => {
         setRefreshing(true);
         try {
-            const [sponsorsRes, eventsRes, usersRes, logsRes, trendRes] = await Promise.allSettled([
+            const [sponsorsRes, eventsRes, usersRes, logsRes] = await Promise.allSettled([
                 api.get('/sponsors/'),
                 api.get('/events/'),
                 api.get('/admin/users'),
@@ -457,7 +457,7 @@ const Dashboard = () => {
 
                 <div className="h-72 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={activityTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <LineChart data={activityTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorEvents" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
@@ -479,21 +479,25 @@ const Dashboard = () => {
                                 wrapperStyle={{ paddingTop: '20px' }}
                                 iconType="circle"
                             />
-                            <Bar
+                            <Line
+                                type="monotone"
                                 dataKey="events"
                                 name="Events"
-                                fill="#6366f1"
-                                radius={[4, 4, 0, 0]}
-                                barSize={32}
+                                stroke="#6366f1"
+                                strokeWidth={3}
+                                dot={{ r: 4, fill: "#6366f1", strokeWidth: 2, stroke: "#fff" }}
+                                activeDot={{ r: 6, strokeWidth: 0 }}
                             />
-                            <Bar
+                            <Line
+                                type="monotone"
                                 dataKey="users"
                                 name="New Members"
-                                fill="#10b981"
-                                radius={[4, 4, 0, 0]}
-                                barSize={32}
+                                stroke="#10b981"
+                                strokeWidth={3}
+                                dot={{ r: 4, fill: "#10b981", strokeWidth: 2, stroke: "#fff" }}
+                                activeDot={{ r: 6, strokeWidth: 0 }}
                             />
-                        </BarChart>
+                        </LineChart>
                     </ResponsiveContainer>
                 </div>
 
