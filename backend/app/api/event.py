@@ -33,7 +33,7 @@ async def create_event(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    new_event = Event(**event.dict())
+    new_event = Event(**event.dict(), location_name=event.location)
     db.add(new_event)
     await db.commit()
     await db.refresh(new_event)

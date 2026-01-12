@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Pencil, Trash2, Image as ImageIcon, Loader2, Handshake, Users, Banknote, Building2, Navigation, Map as MapIcon } from 'lucide-react';
+import { Calendar, MapPin, Pencil, Trash2, Image as ImageIcon, Loader2, Handshake, Users, Banknote, Building2, Map as MapIcon, Megaphone, Target } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { motion } from 'framer-motion';
@@ -8,16 +8,18 @@ import { type Event } from '../../types';
 
 interface EventCardProps {
     event: Event;
-    generationStartTime?: number; // Timestamp if generating, undefined otherwise
+    generationStartTime?: number;
     onEdit: (event: Event) => void;
     onDelete: (id: number) => void;
     onGeneratePoster: (id: number) => void;
     onMatch: (event: Event) => void;
+    onMarket: (event: Event) => void;
+    onPredict: (event: Event) => void;
 }
 
 const API_BASE_URL = 'http://localhost:8000';
 
-export default function EventCard({ event, generationStartTime, onEdit, onDelete, onGeneratePoster, onMatch }: EventCardProps) {
+export default function EventCard({ event, generationStartTime, onEdit, onDelete, onGeneratePoster, onMatch, onMarket, onPredict }: EventCardProps) {
     const navigate = useNavigate();
     const [progress, setProgress] = useState(0);
     const [statusText, setStatusText] = useState("Initializing...");
@@ -62,6 +64,15 @@ export default function EventCard({ event, generationStartTime, onEdit, onDelete
 
     const posterUrl = getPosterUrl(event.marketing_strategy);
 
+    const getTimeState = (dateStr: string) => {
+        const date = new Date(dateStr);
+        const now = new Date();
+        if (date.toDateString() === now.toDateString()) return { label: 'Ongoing', variant: 'info' };
+        if (date > now) return { label: 'Upcoming', variant: 'primary' };
+        return { label: 'Completed', variant: 'neutral' };
+    };
+    const timeState = getTimeState(event.date);
+
     return (
         <motion.div
             layout
@@ -74,7 +85,9 @@ export default function EventCard({ event, generationStartTime, onEdit, onDelete
 
             <div className="p-6 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-4">
-                    <Badge variant={event.status === 'Draft' ? 'warning' : 'success'}>{event.status}</Badge>
+                    <div className="flex gap-2">
+                        <Badge variant={timeState.variant as any}>{timeState.label}</Badge>
+                    </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => onEdit(event)} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">
                             <Pencil className="w-4 h-4" />
@@ -167,6 +180,12 @@ export default function EventCard({ event, generationStartTime, onEdit, onDelete
 
                 <Button className="w-full gap-2 bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white" onClick={() => onMatch(event)}>
                     <Handshake className="w-4 h-4" /> Find Sponsors (AI)
+                </Button>
+                <Button className="w-full gap-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-md hover:shadow-lg border-none" onClick={() => onMarket(event)}>
+                    <Megaphone className="w-4 h-4" /> Market Event (AI)
+                </Button>
+                <Button className="w-full gap-2 bg-gradient-to-r from-indigo-600 to-cyan-500 text-white shadow-md hover:shadow-lg border-none" onClick={() => onPredict(event)}>
+                    <Target className="w-4 h-4" /> Predict Success (AI)
                 </Button>
             </div>
         </motion.div>

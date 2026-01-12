@@ -350,3 +350,15 @@ Style Data: {'theme': 'Traditional Japanese', 'primary_color': '#D4AF37', 'secon
 --- Valorant Tournament ---
 AI Prompt: Cinematic Unreal Engine 5 render of a futuristic tactical arena. Floating jagged teal Radianite crystals pulse with energy amidst sharp geometric architecture. Dramatic high-contrast lighting with deep shadows and vibrant orange sparks. A sleek, cel-shaded anime aesthetic featuring glowing holographic interfaces and metallic surfaces. Distant silhouettes of tactical agents standing on a rooftop overlooking a neon-lit urban battlefield, atmospheric fog.
 Style Data: {'theme': 'Cyberpunk', 'primary_color': '#FF4655', 'secondary_color': '#0F1923', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- sljfs ---
+AI Prompt: Abstract digital landscape with fractured glass shards and neon glitch effects. Distorted geometric shapes floating in a deep obsidian void. Glowing electric blue and magenta data streams, cinematic lighting, Unreal Engine 5 render, hyper-detailed textures. Volumetric fog, chromatic aberration, sharp metallic edges, futuristic tech-noir atmosphere, macro photography of liquid mercury with prismatic light refraction.
+Style Data: {'theme': 'Cyberpunk', 'primary_color': '#00FFFF', 'secondary_color': '#121212', 'font_style': 'Tech', 'layout': 'TopLeft'}
+
+--- Park Cleanup ---
+AI Prompt: A vibrant, sun-drenched city park with lush emerald grass and ancient oak trees. Soft morning light creates a cinematic bokeh effect through the leaves. In the foreground, eco-friendly canvas gardening gloves and a biodegradable bag rest on a rustic wooden bench. High-definition nature photography, realistic textures, vibrant natural colors, environmental conservation atmosphere, 8k resolution, serene and inspiring outdoor setting.
+Style Data: {'theme': 'Eco-Friendly', 'primary_color': '#2E7D32', 'secondary_color': '#FFFFFF', 'font_style': 'Bold', 'layout': 'Center'}
+
+--- Park Cleanup ---
+AI Prompt: Lush urban park at golden hour, vibrant emerald green grass, colorful blooming wildflowers, sun rays filtering through ancient oak tree leaves. A pair of sturdy canvas garden gloves rests on a rustic wooden bench next to a biodegradable paper bag. Cinematic lighting, soft bokeh background, photorealistic, 8k resolution, crisp textures of damp soil and dew-covered leaves, bright and hopeful environmental atmosphere.
+Style Data: {'theme': 'Minimalist', 'primary_color': '#2E7D32', 'secondary_color': '#FFFFFF', 'font_style': 'Modern', 'layout': 'TopLeft'}

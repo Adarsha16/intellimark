@@ -12,6 +12,7 @@ interface EventsContextType {
     deleteEvent: (id: number) => Promise<void>;
     generatePoster: (id: number) => Promise<void>;
     findSponsors: (id: number) => Promise<SponsorMatch[]>;
+    generateMarketing: (id: number) => Promise<any>;
     fetchEvents: () => Promise<void>;
 }
 
@@ -155,6 +156,17 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const generateMarketing = async (id: number) => {
+        try {
+            const res = await api.post(`/marketing/${id}/generate`);
+            return res.data;
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to generate marketing plan");
+            return null;
+        }
+    };
+
     return (
         <EventsContext.Provider value={{
             events,
@@ -165,6 +177,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
             deleteEvent,
             generatePoster,
             findSponsors,
+            generateMarketing,
             fetchEvents
         }}>
             {children}

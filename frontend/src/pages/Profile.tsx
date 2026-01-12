@@ -1,4 +1,7 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { Camera, Mail, Phone, User as UserIcon, Save, Trash2, Upload, Loader2, Image as ImageIcon, X, AlertCircle, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '../components/ui/Button';
 import api from "../services/api";
 
 interface UserProfile {
@@ -24,6 +27,8 @@ const Profile = () => {
     const [uploading, setUploading] = useState(false);
     const [updateLoading, setUpdateLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
+    const [imageError, setImageError] = useState(false);
 
     // Fetch user profile
     useEffect(() => {
@@ -37,6 +42,7 @@ const Profile = () => {
                     phone: res.data.phone || "",
                     bio: res.data.bio || "",
                 });
+                setImageError(false);
             } catch (err: any) {
                 console.error("Failed to fetch profile", err);
                 const errorMsg = err.response?.data?.detail || "Failed to load profile";
@@ -57,6 +63,19 @@ const Profile = () => {
         };
     }, [previewUrl]);
 
+    // Reset image error when file changes
+    useEffect(() => {
+        setImageError(false);
+    }, [user?.profile_picture, previewUrl]);
+
+    // Clear success message after 3 seconds
+    useEffect(() => {
+        if (success) {
+            const timer = setTimeout(() => setSuccess(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [success]);
+
     // Handle form field changes
     const handleChange = (
         e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -71,16 +90,16 @@ const Profile = () => {
 
         setUpdateLoading(true);
         setError(null);
+        setSuccess(null);
 
         try {
             const res = await api.put("/users/me", formData);
             setUser(res.data);
-            alert("Profile updated successfully!");
+            setSuccess("Profile updated successfully!");
         } catch (err: any) {
             console.error("Failed to update profile", err);
             const errorMsg = err.response?.data?.detail || "Failed to update profile";
             setError(errorMsg);
-            alert(errorMsg);
         } finally {
             setUpdateLoading(false);
         }
@@ -94,17 +113,18 @@ const Profile = () => {
             // Validate file type
             const validTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
             if (!validTypes.includes(selectedFile.type)) {
-                alert("Please select a valid image file (PNG, JPG, JPEG, GIF, or WEBP)");
+                setError("Please select a valid image file (PNG, JPG, JPEG, GIF, or WEBP)");
                 return;
             }
 
             // Validate file size (max 5MB)
             if (selectedFile.size > 5 * 1024 * 1024) {
-                alert("File size must be less than 5MB");
+                setError("File size must be less than 5MB");
                 return;
             }
 
             setFile(selectedFile);
+            setError(null);
 
             // Clean up previous preview URL
             if (previewUrl) {
@@ -120,12 +140,13 @@ const Profile = () => {
     // Handle file upload
     const handleUpload = async () => {
         if (!file || !user) {
-            alert("Please select a file first");
+            setError("Please select a file first");
             return;
         }
 
         setUploading(true);
         setError(null);
+        setSuccess(null);
 
         const data = new FormData();
         data.append("file", file);
@@ -136,6 +157,7 @@ const Profile = () => {
             });
 
             setUser(res.data);
+            setSuccess("Profile picture updated successfully!");
 
             // Clean up
             setFile(null);
@@ -148,12 +170,10 @@ const Profile = () => {
             const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
             if (fileInput) fileInput.value = "";
 
-            alert("Profile picture updated successfully!");
         } catch (err: any) {
             console.error("Failed to upload picture", err);
             const errorMsg = err.response?.data?.detail || "Failed to upload picture";
             setError(errorMsg);
-            alert(errorMsg);
         } finally {
             setUploading(false);
         }
@@ -180,16 +200,19 @@ const Profile = () => {
         }
 
         setError(null);
+        setSuccess(null);
 
         try {
             await api.delete("/users/me/profile-picture");
-            setUser({ ...user, profile_picture: undefined });
-            alert("Profile picture deleted successfully!");
+            // Optimistic update
+            if (user) {
+                setUser({ ...user, profile_picture: undefined });
+            }
+            setSuccess("Profile picture deleted successfully!");
         } catch (err: any) {
             console.error("Failed to delete picture", err);
             const errorMsg = err.response?.data?.detail || "Failed to delete picture";
             setError(errorMsg);
-            alert(errorMsg);
         }
     };
 
@@ -199,23 +222,28 @@ const Profile = () => {
             return previewUrl;
         }
         if (user?.profile_picture) {
-            // Handle both relative and absolute paths
             if (user.profile_picture.startsWith("http")) {
                 return user.profile_picture;
             }
-            // Construct proper URL - adjust base URL as needed
             const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
             return `${baseUrl}/uploads/${user.profile_picture}`;
         }
-        return "/default-avatar.png";
+        return null;
     };
+
+    const getInitials = (name?: string) => {
+        const source = name || user?.email || "?";
+        return source.substring(0, 2).toUpperCase();
+    };
+
+    const profileUrl = getProfilePictureUrl();
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-screen bg-slate-50">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-purple-600 font-semibold">Loading profile...</p>
+                    <Loader2 className="w-10 h-10 text-violet-600 animate-spin mx-auto mb-4" />
+                    <p className="text-violet-600 font-medium">Loading profile...</p>
                 </div>
             </div>
         );
@@ -223,174 +251,236 @@ const Profile = () => {
 
     if (!user) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center">
-                    <p className="text-red-500 font-semibold text-xl mb-4">User not found</p>
-                    {error && <p className="text-gray-600">{error}</p>}
+            <div className="flex items-center justify-center min-h-screen bg-slate-50">
+                <div className="text-center bg-white p-8 rounded-2xl shadow-lg border border-red-100 table-auto">
+                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-red-600 font-semibold text-xl mb-2">User not found</p>
+                    <p className="text-slate-500">{error || "Please try logging in again"}</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-4 sm:p-8 mt-10">
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-8">
-                    <h1 className="text-3xl font-bold text-white">My Profile</h1>
-                    <p className="text-purple-100 mt-2">Manage your personal information</p>
-                </div>
+        <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6">
+            <div className="max-w-5xl mx-auto">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-3xl shadow-xl shadow-indigo-100 overflow-hidden border border-slate-100"
+                >
+                    {/* Header */}
+                    <div className="bg-gradient-to-br from-violet-600 to-indigo-600 px-8 py-10 text-white relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                        <h1 className="text-3xl font-bold relative z-10">My Profile</h1>
+                        <p className="text-violet-100 mt-2 relative z-10 flex items-center gap-2">
+                            Manage your personal information
+                        </p>
+                    </div>
 
-                <div className="p-6 sm:p-8">
-                    {/* Error Display */}
-                    {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-red-600 text-sm">{error}</p>
-                        </div>
-                    )}
-
-                    <div className="flex flex-col lg:flex-row gap-8">
-                        {/* Profile Picture Section */}
-                        <div className="flex flex-col items-center lg:w-1/3">
-                            <div className="relative mb-4">
-                                <img
-                                    src={getProfilePictureUrl()}
-                                    alt="Profile"
-                                    className="w-40 h-40 rounded-full object-cover border-4 border-purple-200 shadow-lg"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = "/default-avatar.png";
-                                    }}
-                                />
-                                {user.profile_picture && !previewUrl && (
-                                    <button
-                                        onClick={handleDeletePicture}
-                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-2 shadow-lg hover:bg-red-600 transition"
-                                        title="Delete profile picture"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                                        </svg>
+                    <div className="p-8">
+                        {/* Alerts */}
+                        <AnimatePresence>
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3"
+                                >
+                                    <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                                    <p className="text-red-700 text-sm flex-1">{error}</p>
+                                    <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600">
+                                        <X className="w-4 h-4" />
                                     </button>
-                                )}
-                            </div>
+                                </motion.div>
+                            )}
+                            {success && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3"
+                                >
+                                    <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                                    <p className="text-green-700 text-sm flex-1">{success}</p>
+                                    <button onClick={() => setSuccess(null)} className="text-green-400 hover:text-green-600">
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                            <div className="w-full space-y-3">
-                                <label className="block">
-                                    <span className="sr-only">Choose profile photo</span>
-                                    <div className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition cursor-pointer text-center border border-gray-300">
-                                        <span className="text-sm font-medium">
-                                            {file ? "Change File" : "Choose File"}
-                                        </span>
-                                        <input
-                                            type="file"
-                                            onChange={handleFileChange}
-                                            accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
-                                            className="hidden"
-                                        />
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                            {/* Left Column: Avatar & Actions */}
+                            <div className="flex flex-col items-center space-y-6">
+                                <div className="relative group">
+                                    <div className="w-48 h-48 rounded-full border-4 border-white shadow-lg overflow-hidden bg-violet-100 flex items-center justify-center relative ring-4 ring-violet-50">
+                                        {profileUrl && !imageError ? (
+                                            <img
+                                                src={profileUrl}
+                                                alt="Profile"
+                                                className="w-full h-full object-cover"
+                                                onError={() => setImageError(true)}
+                                            />
+                                        ) : (
+                                            <span className="text-5xl font-bold text-violet-500 select-none">
+                                                {getInitials(user.name)}
+                                            </span>
+                                        )}
+
+                                        {/* Overlay for editing */}
+                                        <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center">
+                                            <div className="text-white flex flex-col items-center gap-1">
+                                                <Camera className="w-8 h-8" />
+                                                <span className="text-xs font-medium">Change Photo</span>
+                                            </div>
+                                            <input
+                                                type="file"
+                                                onChange={handleFileChange}
+                                                accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                                                className="hidden"
+                                            />
+                                        </label>
                                     </div>
-                                </label>
+
+                                    {/* Delete Button (conditionally shown) */}
+                                    {user.profile_picture && !previewUrl && (
+                                        <button
+                                            onClick={handleDeletePicture}
+                                            className="absolute top-0 right-0 p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition shadow-sm border border-white"
+                                            title="Delete profile picture"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="text-center">
+                                    <h2 className="text-xl font-bold text-slate-800">{user.name || "User"}</h2>
+                                    <p className="text-slate-500 text-sm">{user.email}</p>
+                                    <div className="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-violet-100 text-violet-700 text-xs font-semibold uppercase tracking-wide">
+                                        {user.role}
+                                    </div>
+                                </div>
 
                                 {file && (
-                                    <div className="space-y-2">
-                                        <p className="text-xs text-gray-600 text-center truncate px-2">
-                                            {file.name}
-                                        </p>
-                                        <div className="flex gap-2">
-                                            <button
-                                                className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:bg-purple-300 disabled:cursor-not-allowed text-sm font-medium"
-                                                onClick={handleUpload}
-                                                disabled={uploading}
-                                            >
-                                                {uploading ? "Uploading..." : "Upload"}
-                                            </button>
-                                            <button
-                                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition text-sm font-medium"
+                                    <div className="w-full bg-slate-50 p-4 rounded-xl border border-slate-200 animate-in fade-in slide-in-from-top-2">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
+                                                <ImageIcon className="w-5 h-5 text-slate-400" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
+                                                <p className="text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <Button
+                                                variant="outline"
                                                 onClick={handleCancelUpload}
                                                 disabled={uploading}
+                                                className="w-full text-xs"
                                             >
                                                 Cancel
-                                            </button>
+                                            </Button>
+                                            <Button
+                                                onClick={handleUpload}
+                                                disabled={uploading}
+                                                className="w-full text-xs bg-violet-600 hover:bg-violet-700 text-white"
+                                            >
+                                                {uploading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Upload className="w-3 h-3 mr-1" />}
+                                                Upload
+                                            </Button>
                                         </div>
                                     </div>
                                 )}
+                            </div>
 
-                                <p className="text-xs text-gray-500 text-center">
-                                    Max 5MB • PNG, JPG, GIF, WEBP
-                                </p>
+                            {/* Right Column: Profile Form */}
+                            <div className="lg:col-span-2">
+                                <form onSubmit={handleSubmit} className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                                                <Mail className="w-4 h-4 text-slate-400" />
+                                                Email Address
+                                            </label>
+                                            <input
+                                                type="email"
+                                                value={user.email}
+                                                disabled
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed focus:outline-none"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                                                <UserIcon className="w-4 h-4 text-slate-400" />
+                                                Full Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                placeholder="Enter your full name"
+                                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all outline-none"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                                                <Phone className="w-4 h-4 text-slate-400" />
+                                                Phone Number
+                                            </label>
+                                            <input
+                                                type="tel"
+                                                name="phone"
+                                                value={formData.phone}
+                                                onChange={handleChange}
+                                                placeholder="Enter your phone number"
+                                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all outline-none"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-slate-700">Bio</label>
+                                        <textarea
+                                            name="bio"
+                                            value={formData.bio}
+                                            onChange={handleChange}
+                                            rows={5}
+                                            placeholder="Tell us a little about yourself..."
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all outline-none resize-none"
+                                        />
+                                    </div>
+
+                                    <div className="pt-4 flex justify-end">
+                                        <Button
+                                            type="submit"
+                                            disabled={updateLoading}
+                                            className="px-8 bg-violet-600 hover:bg-violet-700 text-white min-w-[140px]"
+                                        >
+                                            {updateLoading ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                    Saving...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Save className="w-4 h-4 mr-2" />
+                                                    Save Changes
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-
-                        {/* Profile Form Section */}
-                        <div className="flex-1">
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Email
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={user.email}
-                                        disabled
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-500 cursor-not-allowed"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Full Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        placeholder="Enter your full name"
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:outline-none transition"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Phone Number
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        placeholder="Enter your phone number"
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:outline-none transition"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Bio
-                                    </label>
-                                    <textarea
-                                        name="bio"
-                                        value={formData.bio}
-                                        onChange={handleChange}
-                                        placeholder="Tell us about yourself..."
-                                        rows={4}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:outline-none resize-none transition"
-                                    />
-                                </div>
-
-                                <div className="flex justify-end pt-4">
-                                    <button
-                                        type="submit"
-                                        disabled={updateLoading}
-                                        className="px-8 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:bg-purple-300 disabled:cursor-not-allowed font-medium shadow-md hover:shadow-lg"
-                                    >
-                                        {updateLoading ? "Saving..." : "Save Changes"}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </div>
     );

@@ -2,14 +2,24 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    CartesianGrid, Cell
+    CartesianGrid, Cell, Area, AreaChart
 } from 'recharts';
 import {
     Briefcase, Users, Calendar, DollarSign, RefreshCw,
-    Loader2, Sparkles, ShieldCheck, Download, FileText
+    Loader2, Sparkles, ShieldCheck, Download, FileText, TrendingUp
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+
+// Mock Activity Trend Data (simulating monthly event/sponsor growth)
+const ACTIVITY_TREND = [
+    { month: 'Jan', events: 2, sponsors: 3 },
+    { month: 'Feb', events: 4, sponsors: 5 },
+    { month: 'Mar', events: 3, sponsors: 4 },
+    { month: 'Apr', events: 6, sponsors: 7 },
+    { month: 'May', events: 8, sponsors: 9 },
+    { month: 'Jun', events: 7, sponsors: 11 },
+];
 
 // --- Types ---
 interface RealDataStats {
@@ -312,6 +322,58 @@ const Dashboard = () => {
                     </div>
                 </motion.div>
             </div>
+
+            {/* Activity Trend Chart (Full Width) */}
+            <motion.div
+                initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.25 }}
+                className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700"
+            >
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                        <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Activity Trend</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Event & Sponsor growth over time</p>
+                    </div>
+                </div>
+
+                <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={ACTIVITY_TREND} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="colorEvents" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="colorSponsors" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                            <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#64748b' }} />
+                            <YAxis tick={{ fontSize: 12, fill: '#64748b' }} />
+                            <Tooltip
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                            />
+                            <Area type="monotone" dataKey="events" stroke="#6366f1" fillOpacity={1} fill="url(#colorEvents)" strokeWidth={2} name="Events" />
+                            <Area type="monotone" dataKey="sponsors" stroke="#10b981" fillOpacity={1} fill="url(#colorSponsors)" strokeWidth={2} name="Sponsors" />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+
+                <div className="flex justify-center gap-6 mt-4">
+                    <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">Events</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">Sponsors</span>
+                    </div>
+                </div>
+            </motion.div>
 
             {/* --- AI Strategy Section (Full Width) --- */}
             <motion.div

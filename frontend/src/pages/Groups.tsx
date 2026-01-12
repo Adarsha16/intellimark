@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
-import { Users, Plus, Trash2, UserPlus, X } from 'lucide-react';
+import { Users, Plus, Trash2, UserPlus, X, Pencil } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import toast, { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Groups() {
     const [groups, setGroups] = useState<any[]>([]);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [editingGroup, setEditingGroup] = useState<any | null>(null);
     const [newGroupName, setNewGroupName] = useState('');
     const [newGroupDesc, setNewGroupDesc] = useState('');
 
@@ -24,16 +25,41 @@ export default function Groups() {
 
     useEffect(() => { fetchGroups(); }, []);
 
-    const handleCreateGroup = async (e: React.FormEvent) => {
+    const handleCreateOrUpdateGroup = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.post('/groups/', { name: newGroupName, description: newGroupDesc });
-            toast.success("Group created");
-            setIsCreateOpen(false);
-            setNewGroupName('');
-            setNewGroupDesc('');
+            if (editingGroup) {
+                await api.put(`/groups/${editingGroup.id}`, { name: newGroupName, description: newGroupDesc });
+                toast.success("Group updated");
+            } else {
+                await api.post('/groups/', { name: newGroupName, description: newGroupDesc });
+                toast.success("Group created");
+            }
+
+            closeModal();
             fetchGroups();
-        } catch (err) { toast.error("Failed to create group"); }
+        } catch (err) { toast.error("Failed to save group"); }
+    };
+
+    const openCreateModal = () => {
+        setEditingGroup(null);
+        setNewGroupName('');
+        setNewGroupDesc('');
+        setIsCreateOpen(true);
+    };
+
+    const openEditModal = (group: any) => {
+        setEditingGroup(group);
+        setNewGroupName(group.name);
+        setNewGroupDesc(group.description);
+        setIsCreateOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsCreateOpen(false);
+        setEditingGroup(null);
+        setNewGroupName('');
+        setNewGroupDesc('');
     };
 
     const handleDeleteGroup = async (id: number) => {
@@ -70,7 +96,7 @@ export default function Groups() {
                     <h1 className="text-2xl font-bold text-slate-900">Member Groups</h1>
                     <p className="text-slate-500">Organize members into clubs, committees, or teams.</p>
                 </div>
-                <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
+                <Button onClick={openCreateModal} className="gap-2">
                     <Plus className="w-4 h-4" /> Create Group
                 </Button>
             </div>
@@ -89,9 +115,14 @@ export default function Groups() {
                                     <h3 className="text-lg font-bold text-slate-900">{group.name}</h3>
                                     <p className="text-sm text-slate-500">{group.description}</p>
                                 </div>
-                                <button onClick={() => handleDeleteGroup(group.id)} className="text-slate-400 hover:text-red-500 transition">
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                <div className="flex gap-2">
+                                    <button onClick={() => openEditModal(group)} className="text-slate-400 hover:text-indigo-500 transition">
+                                        <Pencil className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => handleDeleteGroup(group.id)} className="text-slate-400 hover:text-red-500 transition">
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="p-6 flex-1">
@@ -146,17 +177,17 @@ export default function Groups() {
                 </AnimatePresence>
             </div>
 
-            {/* Create Modal */}
+            {/* Create/Edit Modal */}
             {isCreateOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
-                        <h2 className="text-lg font-bold mb-4">Create New Group</h2>
-                        <form onSubmit={handleCreateGroup} className="space-y-4">
+                        <h2 className="text-lg font-bold mb-4">{editingGroup ? 'Edit Group' : 'Create New Group'}</h2>
+                        <form onSubmit={handleCreateOrUpdateGroup} className="space-y-4">
                             <input className="w-full border p-2 rounded-lg" placeholder="Group Name (e.g. Robotics Club)" required value={newGroupName} onChange={e => setNewGroupName(e.target.value)} />
                             <textarea className="w-full border p-2 rounded-lg" placeholder="Description" value={newGroupDesc} onChange={e => setNewGroupDesc(e.target.value)} />
                             <div className="flex justify-end gap-2 mt-4">
-                                <Button type="button" variant="ghost" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                                <Button type="submit">Create</Button>
+                                <Button type="button" variant="ghost" onClick={closeModal}>Cancel</Button>
+                                <Button type="submit">{editingGroup ? 'Update' : 'Create'}</Button>
                             </div>
                         </form>
                     </div>

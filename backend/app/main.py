@@ -73,6 +73,12 @@ app.include_router(event.router, prefix="/events", tags=["Events"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(groups.router, prefix="/groups", tags=["Groups"])
 
+from app.api import marketing
+app.include_router(marketing.router, prefix="/marketing", tags=["EventPulse AI"])
+
+from app.api import prediction
+app.include_router(prediction.router, prefix="/predict", tags=["AI Success Predictor"])
+
 
 @app.get("/")
 def read_root():

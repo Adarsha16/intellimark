@@ -34,15 +34,13 @@ function App() {
               <Route path="settings" element={<Settings />} />
               <Route path="profile" element={<Profile />} />
               <Route path="groups" element={<Groups />} />
-
             </Route>
 
-            {/* Full Screen Stats/AR Routes */}
             <Route path="/distance-map" element={<ProtectedRoute><DistanceMap /></ProtectedRoute>} />
           </Routes>
         </EventsProvider>
       </AuthProvider>
-    </BrowserRouter >
+    </BrowserRouter>
   );
 }
 

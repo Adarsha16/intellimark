@@ -92,10 +92,11 @@ async def delete_profile_picture(
         raise HTTPException(status_code=404, detail="No profile picture to delete")
     
     # Delete file from filesystem
-    file_path = BASE_DIR / "uploads" / user.profile_picture
-    if file_path.exists() and file_path.is_file():
+    file_path = os.path.join(BASE_DIR, "..", "..", "uploads", user.profile_picture)
+    
+    if os.path.exists(file_path) and os.path.isfile(file_path):
         try:
-            file_path.unlink()
+            os.remove(file_path)
         except Exception as e:
             print(f"Warning: Could not delete profile picture file: {e}")
     

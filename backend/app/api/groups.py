@@ -49,6 +49,27 @@ async def create_group(
     return result.scalars().first()
 
 
+# 2.5 Update Group (Admin Only)
+@router.put("/{group_id}", response_model=GroupOut)
+async def update_group(
+    group_id: int,
+    group_data: GroupCreate,
+    db: AsyncSession = Depends(get_db),
+    admin=Depends(get_current_admin),
+):
+    result = await db.execute(select(Group).where(Group.id == group_id).options(selectinload(Group.members)))
+    group = result.scalars().first()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+
+    group.name = group_data.name
+    group.description = group_data.description
+    
+    await db.commit()
+    await db.refresh(group)
+    return group
+
+
 # 3. Add Member to Group
 @router.post("/{group_id}/add/{user_email}")
 async def add_member(

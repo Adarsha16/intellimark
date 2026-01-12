@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
+import api from '../services/api';
 
 // Imports from modules
 import { useEvents } from '../hooks/useEvents';
@@ -11,10 +12,12 @@ import { type Event, type EventFormData, type SponsorMatch } from '../types';
 import EventCard from '../components/events/EventCard';
 import EventFormModal from '../components/events/EventFormModal';
 import SponsorModal from '../components/events/SponsorModal';
+import MarketingModal from '../components/events/MarketingModal';
+import PredictionModal from '../components/events/PredictionModal';
 
 export default function EventsPage() {
     // 1. Get Logic from Hook
-    const { events, loading, generatingTasks, createEvent, updateEvent, deleteEvent, generatePoster, findSponsors } = useEvents();
+    const { events, loading, generatingTasks, createEvent, updateEvent, deleteEvent, generatePoster, findSponsors, generateMarketing } = useEvents();
 
     // 2. Local View State (Modals)
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -23,6 +26,16 @@ export default function EventsPage() {
     const [isMatchOpen, setIsMatchOpen] = useState(false);
     const [matches, setMatches] = useState<SponsorMatch[]>([]);
     const [matchEventName, setMatchEventName] = useState('');
+
+    const [isMarketingOpen, setIsMarketingOpen] = useState(false);
+    const [marketingData, setMarketingData] = useState<any | null>(null);
+    const [marketingLoading, setMarketingLoading] = useState(false);
+    const [marketingEventName, setMarketingEventName] = useState('');
+
+    const [isPredictOpen, setIsPredictOpen] = useState(false);
+    const [predictionData, setPredictionData] = useState<any | null>(null);
+    const [predictionLoading, setPredictionLoading] = useState(false);
+    const [predictionEventName, setPredictionEventName] = useState('');
 
     // 3. Handlers
     const handleOpenCreate = () => {
@@ -51,6 +64,40 @@ export default function EventsPage() {
         setMatches(result);
         setMatchEventName(event.title);
         setIsMatchOpen(true);
+    };
+
+    const handleMarket = async (event: Event) => {
+        setMarketingEventName(event.title);
+        setMarketingData(null);
+        setMarketingLoading(true);
+        setIsMarketingOpen(true);
+
+        // Call AI Service
+        const data = await generateMarketing(event.id);
+
+        setMarketingLoading(false);
+        if (data) {
+            setMarketingData(data);
+        } else {
+            setIsMarketingOpen(false); // Close on fail
+        }
+    };
+
+    const handlePredict = async (event: Event) => {
+        setPredictionEventName(event.title);
+        setPredictionData(null);
+        setPredictionLoading(true);
+        setIsPredictOpen(true);
+
+        try {
+            const res = await api.get(`/predict/${event.id}`);
+            setPredictionData(res.data);
+        } catch (err) {
+            toast.error('Prediction failed');
+            setIsPredictOpen(false);
+        } finally {
+            setPredictionLoading(false);
+        }
     };
 
     return (
@@ -83,6 +130,8 @@ export default function EventsPage() {
                                 onDelete={deleteEvent}
                                 onGeneratePoster={generatePoster}
                                 onMatch={handleMatch}
+                                onMarket={handleMarket}
+                                onPredict={handlePredict}
                             />
                         ))}
                     </AnimatePresence>
@@ -111,6 +160,22 @@ export default function EventsPage() {
                 onClose={() => setIsMatchOpen(false)}
                 matches={matches}
                 eventName={matchEventName}
+            />
+
+            <MarketingModal
+                isOpen={isMarketingOpen}
+                onClose={() => setIsMarketingOpen(false)}
+                marketingData={marketingData}
+                isLoading={marketingLoading}
+                eventName={marketingEventName}
+            />
+
+            <PredictionModal
+                isOpen={isPredictOpen}
+                onClose={() => setIsPredictOpen(false)}
+                prediction={predictionData}
+                isLoading={predictionLoading}
+                eventName={predictionEventName}
             />
         </div>
     );

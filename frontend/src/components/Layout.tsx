@@ -7,7 +7,6 @@ import {
     Users,
     Settings,
     LogOut,
-    Bell,
     ChevronDown,
     Sparkles,
     Calendar,
@@ -17,7 +16,6 @@ import {
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 import api from '../services/api';
-import Profile from '../pages/Profile';
 
 interface AdminUser {
     id: number;
@@ -147,7 +145,6 @@ const Layout = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-
                         <Menu as="div" className="relative">
                             <Menu.Button className="flex items-center gap-2 text-sm font-semibold">
                                 Account <ChevronDown className="w-4 h-4" />

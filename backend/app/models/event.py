@@ -17,6 +17,7 @@ class Event(Base):
     title = Column(String, index=True, nullable=False)
     description = Column(Text, nullable=True)
     location = Column(String, nullable=False)
+    location_name = Column(String, nullable=False)
     date = Column(DateTime(timezone=True), nullable=False)
     capacity = Column(Integer, default=0)
     status = Column(String, default=EventStatus.DRAFT)
