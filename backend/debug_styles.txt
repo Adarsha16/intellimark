@@ -366,3 +366,12 @@ Style Data: {'theme': 'Minimalist', 'primary_color': '#2E7D32', 'secondary_color
 --- KU Anniversary ---
 AI Prompt: Cinematic wide-angle view of a prestigious university campus nestled in the lush green hills of Dhulikhel. Majestic snow-capped Himalayan peaks in the far distance under a golden sunrise. Traditional red brick architecture with sloping roofs, modern glass lecture halls, manicured gardens, and festive academic banners. Soft bokeh, Unreal Engine 5 render, vibrant cultural atmosphere, hyper-realistic, 8k detail.
 Style Data: {'theme': 'Elegant', 'primary_color': '#D4AF37', 'secondary_color': '#003366', 'font_style': 'Serif', 'layout': 'Center'}
+ERROR: PromptResult.__init__() missing 1 required positional argument: 'design_style'
+
+--- GreenHouse Expo: Grow Your Kathmandu Oasis ---
+AI Prompt: 
+Style Data: {}
+
+--- Sumo Showdown: Epic Clash in Kathmandu ---
+AI Prompt: { "visual_prompt": "A cinematic, hyper-realistic wide shot of two colossal sumo wrestlers in a powerful mid-air clash. Fine grains of sand and dust explode from the dohyo ring under dramatic spotlights. The background features the iconic tiered wooden temples and stone spires of Kathmandu, shrouded in a mystical morning fog. Intensely detailed skin textures, traditional silk maw
+Style Data: {'theme': 'Modern', 'primary_color': '#FFFFFF', 'secondary_color': '#000000', 'font_style': 'Modern', 'layout': 'Center'}
