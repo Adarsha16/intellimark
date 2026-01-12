@@ -386,7 +386,7 @@ const Dashboard = () => {
                                     <Tooltip
                                         cursor={{ fill: '#f8fafc' }}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                        formatter={(val: number | undefined) => formatCurrency(val ?? 0)}
+                                        formatter={(val: any) => formatCurrency(val ?? 0)}
                                     />
                                     <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
                                         {chartFundingByStatus.map((_, index) => (
