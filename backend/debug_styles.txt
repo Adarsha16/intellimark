@@ -366,3 +366,13 @@ Style Data: {'theme': 'Minimalist', 'primary_color': '#2E7D32', 'secondary_color
 --- KU Anniversary ---
 AI Prompt: Cinematic wide-angle view of a prestigious university campus nestled in the lush green hills of Dhulikhel. Majestic snow-capped Himalayan peaks in the far distance under a golden sunrise. Traditional red brick architecture with sloping roofs, modern glass lecture halls, manicured gardens, and festive academic banners. Soft bokeh, Unreal Engine 5 render, vibrant cultural atmosphere, hyper-realistic, 8k detail.
 Style Data: {'theme': 'Elegant', 'primary_color': '#D4AF37', 'secondary_color': '#003366', 'font_style': 'Serif', 'layout': 'Center'}
+ERROR: PromptResult.__init__() missing 1 required positional argument: 'design_style'
+
+--- Hackathon ---
+AI Prompt: 
+Style Data: {}
+ERROR: PromptResult.__init__() missing 1 required positional argument: 'design_style'
+
+--- Typing Competition ---
+AI Prompt: 
+Style Data: {}
