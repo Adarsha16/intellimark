@@ -20,7 +20,10 @@ export default function SponsorModal({ isOpen, onClose, matches, eventName }: Sp
         }
         const subject = encodeURIComponent(`Sponsorship Opportunity: ${eventName}`);
         const body = encodeURIComponent(`Hi ${sponsor.company_name},\n\nWe would love to discuss a partnership for ${eventName}.\n\nBest regards,`);
-        window.location.href = `mailto:${sponsor.contact_email}?subject=${subject}&body=${body}`;
+
+        // Use window.open with _blank for better cross-browser compatibility
+        const mailtoLink = `mailto:${sponsor.contact_email}?subject=${subject}&body=${body}`;
+        window.open(mailtoLink, '_blank');
     };
 
     if (!isOpen) return null;

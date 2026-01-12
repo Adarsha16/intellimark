@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Tab } from '@headlessui/react';
-import { Users, ShieldAlert, Save, Server, Activity, Sparkles } from 'lucide-react';
+import { Users, ShieldAlert, Activity, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -44,6 +44,8 @@ export default function Settings() {
     };
 
     // Trigger Backup Handler
+    // Trigger Backup Handler
+    /*
     const handleBackup = async () => {
         toast.promise(api.post('/admin/backup'), {
             loading: 'Starting backup...',
@@ -51,6 +53,7 @@ export default function Settings() {
             error: 'Failed to start backup'
         });
     };
+    */
 
     const tabs = [
         { name: 'User Management', icon: Users },

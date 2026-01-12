@@ -100,6 +100,34 @@ DOMAIN_KNOWLEDGE = {
         "related": ["leadership", "growth", "scaling", "funding", "market", "sales"],
         "boost_words": ["business", "startup", "corporate"],
     },
+    # GAMING / ESPORTS - New domain for gaming events
+    "gaming": {
+        "synonyms": [
+            "esports",
+            "game",
+            "gamer",
+            "tournament",
+            "valorant",
+            "csgo",
+            "league",
+            "dota",
+            "fortnite",
+            "pubg",
+            "fps",
+            "moba",
+            "streaming",
+            "twitch",
+            "youtube",
+            "competitive",
+            "console",
+            "pc",
+            "playstation",
+            "xbox",
+            "nintendo",
+        ],
+        "related": ["tech", "entertainment", "competition", "prize", "championship", "player"],
+        "boost_words": ["gaming", "esports", "tournament", "game"],
+    },
     # LIFESTYLE
     "food": {
         "synonyms": [

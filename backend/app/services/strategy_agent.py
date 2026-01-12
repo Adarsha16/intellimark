@@ -1,15 +1,61 @@
 import json
 import logging
-import urllib.request
-import urllib.error
+import os
+from pathlib import Path
 from datetime import datetime
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.event import Event
 from app.models.sponser import Sponsor
 from app.core.config import settings
+import httpx
 
 logger = logging.getLogger(__name__)
+
+# Storage path for strategy reports
+STRATEGY_STORAGE_DIR = Path(os.getcwd()) / "static" / "strategy_reports"
+STRATEGY_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+LATEST_STRATEGY_FILE = STRATEGY_STORAGE_DIR / "latest_strategy.json"
+
+
+def save_strategy_report(report: str) -> None:
+    """Save the generated strategy report to disk."""
+    try:
+        data = {
+            "report": report,
+            "generated_at": datetime.now().isoformat(),
+        }
+        with open(LATEST_STRATEGY_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        logger.info(f"Strategy report saved to {LATEST_STRATEGY_FILE}")
+    except Exception as e:
+        logger.error(f"Failed to save strategy report: {e}")
+
+
+def get_latest_strategy() -> dict:
+    """Retrieve the most recently generated strategy report with timestamp."""
+    try:
+        if LATEST_STRATEGY_FILE.exists():
+            with open(LATEST_STRATEGY_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return {"report": data.get("report", ""), "generated_at": data.get("generated_at", "")}
+        return {"report": "", "generated_at": ""}
+    except Exception as e:
+        logger.error(f"Failed to load strategy report: {e}")
+        return {"report": "", "generated_at": ""}
+
+
+async def generate_and_save_strategy(db: AsyncSession) -> None:
+    """
+    Wrapper function for background task execution.
+    Generates strategy and saves it automatically.
+    """
+    try:
+        report = await generate_club_strategy(db)
+        # Report is already saved within generate_club_strategy
+        logger.info("Background strategy generation completed successfully")
+    except Exception as e:
+        logger.error(f"Background strategy generation failed: {e}")
 
 
 async def generate_club_strategy(db: AsyncSession) -> str:
@@ -56,6 +102,9 @@ async def generate_club_strategy(db: AsyncSession) -> str:
     
     Do not be brief. Expand on your points with reasoning and data references.
     
+    CRITICAL: Do NOT use email headers (To:, From:, Subject:, Date:). 
+    Start DIRECTLY with the first markdown section header.
+    
     REQUIRED FORMAT (Markdown):
     
     ### 📊 Executive Health Check
@@ -89,8 +138,8 @@ async def generate_club_strategy(db: AsyncSession) -> str:
     if not api_key:
         return "Error: Gemini API Key is missing."
 
-    # Using gemini-1.5-flash for larger context window, or gemini-pro if flash fails
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    # Using gemini-3-flash-preview as requested
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={api_key}"
 
     request_data = {
         "contents": [{"parts": [{"text": f"{system_instruction}\n\n{user_message}"}]}],
@@ -101,19 +150,25 @@ async def generate_club_strategy(db: AsyncSession) -> str:
     }
 
     try:
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(request_data).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-
-        with urllib.request.urlopen(req, timeout=60) as response:  # Increased timeout
-            result = json.loads(response.read().decode("utf-8"))
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                url,
+                json=request_data,
+                headers={"Content-Type": "application/json"}
+            )
+            result = response.json()
 
         if "candidates" in result and result["candidates"]:
-            return result["candidates"][0]["content"]["parts"][0]["text"]
+            try:
+                report = result["candidates"][0]["content"]["parts"][0]["text"]
+                save_strategy_report(report)  # Save to disk
+                return report
+            except (KeyError, IndexError, TypeError) as parse_err:
+                logger.error(f"Failed to parse API response: {parse_err}")
+                logger.error(f"Response structure: {json.dumps(result, indent=2)[:500]}")
+                return f"AI Generation Error: Unexpected response format. Raw: {str(result)[:200]}"
         else:
+            logger.error(f"No candidates in response: {json.dumps(result, indent=2)[:500]}")
             return "AI returned an empty response."
 
     except Exception as e:
