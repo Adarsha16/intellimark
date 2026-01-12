@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
@@ -8,7 +8,7 @@ from datetime import datetime
 from app.db.session import get_db
 from app.models.user import User
 from app.models.admin import ActivityLog
-from app.services.strategy_agent import generate_club_strategy
+from app.services.strategy_agent import generate_club_strategy, get_latest_strategy
 from app.services.pdf_generator import create_executive_pdf
 from app.api.deps import get_current_admin
 from app.core.logger import log_activity
@@ -128,13 +128,31 @@ async def get_system_logs(
 
 @router.post("/generate-strategy")
 async def get_ai_strategy_report(
-    db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db), 
+    admin: User = Depends(get_current_admin)
 ):
     """
-    Analyzes club data (Events + Sponsors) to produce a strategic roadmap.
+    Starts generating a strategic roadmap in the background.
+    Returns immediately while generation continues.
     """
-    report = await generate_club_strategy(db)
-    return {"report": report}
+    from app.services.strategy_agent import generate_and_save_strategy
+    
+    # Start generation in background
+    background_tasks.add_task(generate_and_save_strategy, db)
+    
+    return {"status": "generating", "message": "Strategy generation started in background"}
+
+
+@router.get("/latest-strategy")
+async def get_latest_strategy_report(
+    admin: User = Depends(get_current_admin)
+):
+    """
+    Retrieves the most recently generated strategy report from storage.
+    """
+    data = get_latest_strategy()
+    return data  # Returns {"report": "...", "generated_at": "..."}
 
 
 @router.post("/backup")

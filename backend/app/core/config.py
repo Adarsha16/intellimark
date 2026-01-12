@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "replace_this_with_a_secure_random_string"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    GEMINI_API_KEY: Optional[str] = "AIzaSyAzXwmytsFW71MkwOsajcJOHoFpcoybp5E"
+    GEMINI_API_KEY: Optional[str] = None
 
     class Config:
         env_file = ".env"

@@ -16,3 +16,4 @@ class Sponsor(Base):
     total_funding = Column(Float, default=0.0)
     notes = Column(Text, nullable=True)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

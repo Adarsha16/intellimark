@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -11,15 +11,6 @@ import {
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
-// Mock Activity Trend Data (simulating monthly event/sponsor growth)
-const ACTIVITY_TREND = [
-    { month: 'Jan', events: 2, sponsors: 3 },
-    { month: 'Feb', events: 4, sponsors: 5 },
-    { month: 'Mar', events: 3, sponsors: 4 },
-    { month: 'Apr', events: 6, sponsors: 7 },
-    { month: 'May', events: 8, sponsors: 9 },
-    { month: 'Jun', events: 7, sponsors: 11 },
-];
 
 // --- Types ---
 interface RealDataStats {
@@ -63,11 +54,18 @@ const Dashboard = () => {
     });
 
     const [chartFundingByStatus, setChartFundingByStatus] = useState<any[]>([]);
+    const [activityTrend, setActivityTrend] = useState<any[]>([]);
     const [recentLogs, setRecentLogs] = useState<ActivityLog[]>([]);
 
     // --- AI Strategy State ---
-    const [strategyReport, setStrategyReport] = useState<string | null>(null);
+    const [strategyReport, setStrategyReport] = useState<string | null>(() => {
+        return localStorage.getItem('ai_strategy_report');
+    });
     const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
+
+    // Refs for cleanup
+    const pollIntervalRef = useRef<number | null>(null);
+    const timeoutRef = useRef<number | null>(null);
 
     // --- Helpers ---
     const formatCurrency = (val: number) =>
@@ -86,6 +84,38 @@ const Dashboard = () => {
         })).sort((a, b) => b.value - a.value);
     };
 
+    const processActivityTrend = (events: any[], sponsors: any[]) => {
+        const months = 6;
+        const data: Record<string, { events: number, sponsors: number, sortKey: number }> = {};
+        const today = new Date();
+
+        // Initialize last 6 months
+        for (let i = months - 1; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const key = d.toLocaleString('default', { month: 'short' });
+            data[key] = { events: 0, sponsors: 0, sortKey: d.getTime() };
+        }
+
+        // Helper to increment
+        const increment = (dateStr: string, type: 'events' | 'sponsors') => {
+            if (!dateStr) return;
+            const date = new Date(dateStr);
+            // Only count if within the last ~6 months roughly
+            // Actually, we just check if the month key exists in our initialized map
+            const key = date.toLocaleString('default', { month: 'short' });
+            if (data[key]) {
+                data[key][type]++;
+            }
+        };
+
+        events.forEach(e => increment(e.created_at || e.date, 'events'));
+        sponsors.forEach(s => increment(s.created_at, 'sponsors'));
+
+        return Object.entries(data)
+            .map(([month, val]) => ({ month, ...val }))
+            .sort((a, b) => a.sortKey - b.sortKey);
+    };
+
     const fetchData = async () => {
         setRefreshing(true);
         try {
@@ -97,7 +127,7 @@ const Dashboard = () => {
             ]);
 
             // 1. Sponsors & Revenue
-            let sponsors = [];
+            let sponsors: any[] = [];
             if (sponsorsRes.status === 'fulfilled') sponsors = sponsorsRes.value.data;
 
             const totalRev = sponsors.reduce((acc: number, s: any) => acc + (s.total_funding || 0), 0);
@@ -106,7 +136,7 @@ const Dashboard = () => {
                 .reduce((acc: number, s: any) => acc + (s.total_funding || 0), 0);
 
             // 2. Events
-            let events = [];
+            let events: any[] = [];
             if (eventsRes.status === 'fulfilled') events = eventsRes.value.data;
             const upcoming = events.filter((e: any) => new Date(e.date) > new Date()).length;
 
@@ -127,6 +157,18 @@ const Dashboard = () => {
             });
 
             setChartFundingByStatus(processFundingChart(sponsors));
+            setActivityTrend(processActivityTrend(events, sponsors));
+
+            // 5. Load latest strategy report from backend
+            try {
+                const strategyRes = await api.get('/admin/latest-strategy');
+                if (strategyRes.data.report) {
+                    setStrategyReport(strategyRes.data.report);
+                    localStorage.setItem('ai_strategy_report', strategyRes.data.report);
+                }
+            } catch {
+                // If no strategy exists yet, silently fail
+            }
 
         } catch (error) {
             console.error(error);
@@ -141,17 +183,91 @@ const Dashboard = () => {
 
     // --- Actions ---
     const generateStrategy = async () => {
+        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+        const startTime = Date.now();
         setIsGeneratingStrategy(true);
+        localStorage.setItem('strategy_generating', 'true');
+        localStorage.setItem('strategy_start_time', startTime.toString());
+
         try {
-            const res = await api.post('/admin/generate-strategy');
-            setStrategyReport(res.data.report);
-            toast.success("Strategy Analysis Complete");
+            await api.post('/admin/generate-strategy');
+            toast.success("Generating strategy in background...");
+
+            // Poll using timestamp comparison
+            pollIntervalRef.current = window.setInterval(async () => {
+                try {
+                    const res = await api.get('/admin/latest-strategy');
+                    const { report, generated_at } = res.data;
+
+                    // Only accept if generated AFTER we started
+                    if (report && generated_at) {
+                        const reportTime = new Date(generated_at).getTime();
+                        if (reportTime > startTime) {
+                            setStrategyReport(report);
+                            localStorage.setItem('ai_strategy_report', report);
+                            localStorage.removeItem('strategy_generating');
+                            localStorage.removeItem('strategy_start_time');
+                            setIsGeneratingStrategy(false);
+                            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+                            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+                            toast.success("Strategy Analysis Complete!");
+                        }
+                    }
+                } catch (pollErr) {
+                    console.error("Polling error:", pollErr);
+                }
+            }, 3000);
+
+            timeoutRef.current = window.setTimeout(() => {
+                if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+                localStorage.removeItem('strategy_generating');
+                localStorage.removeItem('strategy_start_time');
+                setIsGeneratingStrategy(false);
+                toast.error("Generation timed out.");
+            }, 180000);
+
         } catch (err) {
-            toast.error("AI Service Unavailable");
-        } finally {
             setIsGeneratingStrategy(false);
+            localStorage.removeItem('strategy_generating');
+            localStorage.removeItem('strategy_start_time');
+            toast.error("Failed to start generation");
         }
     };
+
+    // Resume polling on mount if generation was in progress
+    useEffect(() => {
+        const isGenerating = localStorage.getItem('strategy_generating') === 'true';
+        const startTimeStr = localStorage.getItem('strategy_start_time');
+
+        if (isGenerating && startTimeStr) {
+            const startTime = parseInt(startTimeStr, 10);
+            setIsGeneratingStrategy(true);
+
+            pollIntervalRef.current = window.setInterval(async () => {
+                try {
+                    const res = await api.get('/admin/latest-strategy');
+                    const { report, generated_at } = res.data;
+
+                    if (report && generated_at) {
+                        const reportTime = new Date(generated_at).getTime();
+                        if (reportTime > startTime) {
+                            setStrategyReport(report);
+                            localStorage.setItem('ai_strategy_report', report);
+                            localStorage.removeItem('strategy_generating');
+                            localStorage.removeItem('strategy_start_time');
+                            setIsGeneratingStrategy(false);
+                            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+                            toast.success("Strategy Analysis Complete!");
+                        }
+                    }
+                } catch (pollErr) {
+                    console.error("Polling error:", pollErr);
+                }
+            }, 3000);
+        }
+    }, []);
 
     const handleExportPDF = async () => {
         if (!strategyReport) {
@@ -340,7 +456,7 @@ const Dashboard = () => {
 
                 <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={ACTIVITY_TREND} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <AreaChart data={activityTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorEvents" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />

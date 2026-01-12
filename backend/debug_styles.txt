@@ -362,3 +362,7 @@ Style Data: {'theme': 'Eco-Friendly', 'primary_color': '#2E7D32', 'secondary_col
 --- Park Cleanup ---
 AI Prompt: Lush urban park at golden hour, vibrant emerald green grass, colorful blooming wildflowers, sun rays filtering through ancient oak tree leaves. A pair of sturdy canvas garden gloves rests on a rustic wooden bench next to a biodegradable paper bag. Cinematic lighting, soft bokeh background, photorealistic, 8k resolution, crisp textures of damp soil and dew-covered leaves, bright and hopeful environmental atmosphere.
 Style Data: {'theme': 'Minimalist', 'primary_color': '#2E7D32', 'secondary_color': '#FFFFFF', 'font_style': 'Modern', 'layout': 'TopLeft'}
+
+--- KU Anniversary ---
+AI Prompt: Cinematic wide-angle view of a prestigious university campus nestled in the lush green hills of Dhulikhel. Majestic snow-capped Himalayan peaks in the far distance under a golden sunrise. Traditional red brick architecture with sloping roofs, modern glass lecture halls, manicured gardens, and festive academic banners. Soft bokeh, Unreal Engine 5 render, vibrant cultural atmosphere, hyper-realistic, 8k detail.
+Style Data: {'theme': 'Elegant', 'primary_color': '#D4AF37', 'secondary_color': '#003366', 'font_style': 'Serif', 'layout': 'Center'}
