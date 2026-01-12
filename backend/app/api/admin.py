@@ -9,7 +9,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.models.admin import ActivityLog
 from app.models.event import Event
-from app.services.strategy_agent import generate_club_strategy
+from app.services.strategy_agent import generate_club_strategy, get_latest_strategy
 from app.services.pdf_generator import create_executive_pdf
 from app.api.deps import get_current_admin
 from app.core.logger import log_activity

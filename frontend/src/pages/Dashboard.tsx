@@ -55,7 +55,6 @@ const Dashboard = () => {
 
     const [chartFundingByStatus, setChartFundingByStatus] = useState<any[]>([]);
     const [activityTrend, setActivityTrend] = useState<any[]>([]);
-    const [activityTrend, setActivityTrend] = useState<any[]>([]);
     const [recentLogs, setRecentLogs] = useState<ActivityLog[]>([]);
 
     // --- AI Strategy State ---
@@ -388,7 +387,7 @@ const Dashboard = () => {
                                     <Tooltip
                                         cursor={{ fill: '#f8fafc' }}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                        formatter={(val: number) => formatCurrency(val)}
+                                        formatter={(val: number | undefined) => formatCurrency(val ?? 0)}
                                     />
                                     <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
                                         {chartFundingByStatus.map((_, index) => (
@@ -458,7 +457,7 @@ const Dashboard = () => {
 
                 <div className="h-72 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={activityTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <BarChart data={activityTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorEvents" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
