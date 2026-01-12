@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { ArrowLeft, Loader2, Navigation, Compass, Camera, Zap, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Navigation, Camera, Zap, CheckCircle, Target, ShieldCheck } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
 // A-Frame custom elements
@@ -124,22 +124,109 @@ export default function ARView() {
         return 1;
     };
 
+    const loadScripts = () => {
+        return new Promise<void>((resolve, reject) => {
+            if ((window as any).AFRAME) {
+                console.log("[AR] A-Frame already present");
+                resolve();
+                return;
+            }
+
+            console.log("[AR] Loading A-Frame...");
+            const aframeScript = document.createElement('script');
+            // Using a very stable CDN for A-Frame
+            aframeScript.src = 'https://cdn.jsdelivr.net/gh/aframevr/aframe@v1.4.2/dist/aframe-master.min.js';
+
+            aframeScript.onload = () => {
+                console.log("[AR] A-Frame loaded. Loading AR.js...");
+                const arjsScript = document.createElement('script');
+                // Using jsdelivr for AR.js as well
+                arjsScript.src = 'https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@master/aframe/build/aframe-ar.js';
+
+                arjsScript.onload = () => {
+                    console.log("[AR] AR.js loaded successfully");
+                    resolve();
+                };
+                arjsScript.onerror = (e) => {
+                    console.error("[AR] AR.js failed to load", e);
+                    reject(new Error('AR.js library failed to download.'));
+                };
+                document.head.appendChild(arjsScript);
+            };
+
+            aframeScript.onerror = (e) => {
+                console.error("[AR] A-Frame failed to load", e);
+                reject(new Error('A-Frame library failed to download.'));
+            };
+            document.head.appendChild(aframeScript);
+        });
+    };
+
     const requestPermissions = async () => {
         try {
-            await new Promise<GeolocationPosition>((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject);
-            });
+            console.log("[AR] Starting permission sequence...");
 
-            if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-                const response = await (DeviceOrientationEvent as any).requestPermission();
-                if (response !== 'granted') throw new Error('Orientation permission denied');
+            // 1. Geolocation check
+            try {
+                await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        timeout: 5000,
+                        enableHighAccuracy: true
+                    });
+                });
+                console.log("[AR] Geolocation check passed");
+            } catch (geoErr: any) {
+                console.error("[AR] Geolocation error:", geoErr);
+                const msg = geoErr.code === 1 ? "Location access denied." : "Location request timed out or failed.";
+                alert(`Location Error: ${msg} Please enable location and try again.`);
+                return;
+            }
+
+            // 2. Motion Sensors (iOS specific but good to check)
+            if (window.DeviceOrientationEvent && typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+                try {
+                    const response = await (DeviceOrientationEvent as any).requestPermission();
+                    if (response !== 'granted') {
+                        alert("Motion sensors denied. AR navigation requires orientation data.");
+                        return;
+                    }
+                    console.log("[AR] DeviceOrientation granted");
+                } catch (orientErr) {
+                    console.error("[AR] Orientation error:", orientErr);
+                    alert("Failure to access motion sensors.");
+                    return;
+                }
+            }
+
+            // 3. Camera Permission (Request explicitly before loading scripts)
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                stream.getTracks().forEach(track => track.stop()); // Just checking, don't keep it open yet
+                console.log("[AR] Camera permission verified");
+            } catch (camErr) {
+                console.error("[AR] Camera error:", camErr);
+                alert("Camera access is required for AR. Please allow camera access in your browser settings.");
+                return;
+            }
+
+            // 4. Load Scripts
+            setLoading(true);
+            try {
+                await loadScripts();
+                console.log("[AR] Scripts loaded successfully");
+            } catch (scriptErr) {
+                console.error("[AR] Script loading error:", scriptErr);
+                alert("Failed to load AR libraries. Please check your internet connection.");
+                setLoading(false);
+                return;
             }
 
             setPermissionGranted(true);
             setLoading(false);
-        } catch (err) {
-            console.error(err);
-            alert("Permissions required for AR navigation.");
+        } catch (err: any) {
+            console.error("[AR] General startup error:", err);
+            alert("An unexpected error occurred during AR initialization. " + (err.message || ""));
+            setLoading(false);
         }
     };
 
@@ -316,12 +403,19 @@ export default function ARView() {
                             {[1, 2, 3].map((i) => (
                                 <AEntity
                                     key={i}
-                                    geometry={`primitive: torus; radius: ${3.8 + i * 0.5}; radius-tubular: 0.02`}
-                                    material={`color: #34d399; opacity: ${0.4 / i}; transparent: true; emissive: #10b981; emissiveIntensity: 0.5`}
+                                    geometry={`primitive: torus; radius: ${3.8 + i * 0.8}; radius-tubular: 0.01`}
+                                    material={`color: ${isTargeted ? '#10b981' : '#6366f1'}; opacity: ${0.4 / i}; transparent: true; emissive: ${isTargeted ? '#10b981' : '#6366f1'}; emissiveIntensity: 0.5`}
                                     rotation={`${Math.random() * 360} ${Math.random() * 360} ${Math.random() * 360}`}
-                                    animation={`property: rotation; to: ${Math.random() > 0.5 ? 360 : -360} 360 360; dur: ${4000 + i * 2000}; easing: linear; loop: true`}
+                                    animation={`property: rotation; to: ${Math.random() > 0.5 ? 360 : -360} 360 360; dur: ${6000 + i * 3000}; easing: linear; loop: true`}
                                 />
                             ))}
+
+                            {/* Holographic Scan Line */}
+                            <AEntity
+                                geometry="primitive: cylinder; height: 0.05; radius: 4"
+                                material="color: #34d399; opacity: 0.4; transparent: true; shader: flat"
+                                animation="property: position; from: 0 -4 0; to: 0 4 0; dur: 2000; loop: true; easing: linear"
+                            />
 
                             {/* Ground Dynamic Pulse Assembly */}
                             <AEntity position="0 -8 0">
@@ -376,53 +470,80 @@ export default function ARView() {
             {/* Premium Navigation HUD */}
             <div className="absolute top-0 left-0 right-0 z-[60] p-6 pointer-events-none">
                 <div className="max-w-xl mx-auto flex flex-col gap-4">
-                    {/* Main Bar */}
-                    <div className="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-5 flex items-center justify-between pointer-events-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-top duration-700">
-                        <div className="flex items-center gap-5 border-r border-white/5 pr-6 flex-1 hover:translate-y-[-2px] transition-transform">
-                            <div className={`p-3 rounded-2xl transition-colors duration-500 ${isTargeted ? 'bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.5)]' : 'bg-white/5'}`}>
-                                <Navigation className={`w-6 h-6 ${isTargeted ? 'text-white' : 'text-indigo-400'}`} />
+                    {/* Main Bar with Integrated Radar */}
+                    <div className="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-4 flex items-center gap-4 pointer-events-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-top duration-700">
+                        {/* Interactive Radar Component */}
+                        <div className="relative w-24 h-24 flex-shrink-0 group">
+                            <div className="absolute inset-0 border-2 border-indigo-500/20 rounded-full" />
+                            <div className="absolute inset-0 border border-white/5 rounded-full scale-75" />
+                            <div className="absolute inset-0 border border-white/5 rounded-full scale-50" />
+
+                            {/* Scanning Sweep */}
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-indigo-500/20 to-transparent animate-[spin_4s_linear_infinite]" />
+
+                            {/* North Indicator */}
+                            <div className="absolute top-1 left-1/2 -translate-x-1/2 text-[8px] font-black text-white/40">N</div>
+
+                            {/* Target Dot on Radar */}
+                            <div
+                                className={`absolute w-3 h-3 rounded-full shadow-[0_0_10px_rgba(129,140,248,0.8)] transition-all duration-300 ${isTargeted ? 'bg-emerald-400 scale-125' : 'bg-indigo-400'}`}
+                                style={{
+                                    left: '50%',
+                                    top: '50%',
+                                    transform: `translate(-50%, -50%) rotate(${bearing - heading}deg) translateY(-32px)`
+                                }}
+                            >
+                                <div className="absolute inset-0 animate-ping bg-current rounded-full opacity-40" />
                             </div>
-                            <div>
+
+                            {/* Center User Dot */}
+                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_8px_white]" />
+                        </div>
+
+                        <div className="flex-1 flex items-center justify-between pr-4">
+                            <div className="flex flex-col border-r border-white/5 pr-6">
                                 <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-black mb-1">Range</div>
-                                <div className="text-xl font-black text-white tabular-nums tracking-tight">
-                                    {distance ? `${Math.round(distance)}` : '--'}<span className="text-xs ml-1 text-white/40 uppercase">Mtrs</span>
+                                <div className="text-2xl font-black text-white tabular-nums tracking-tight">
+                                    {distance ? `${Math.round(distance)}` : '--'}<span className="text-xs ml-1 text-white/40 uppercase font-bold">M</span>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="flex items-center gap-5 px-6 border-r border-white/5 flex-1 hover:translate-y-[-2px] transition-transform">
-                            <div className="bg-white/5 p-3 rounded-2xl group">
-                                <Compass className="w-6 h-6 text-emerald-400 group-hover:rotate-[360deg] transition-transform duration-1000" />
-                            </div>
-                            <div>
+                            <div className="flex flex-col px-6">
                                 <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-black mb-1">Bearing</div>
-                                <div className="text-xl font-black text-white tracking-widest">{getCardinalDirection(bearing)}</div>
+                                <div className="flex items-center gap-2">
+                                    <div className="text-2xl font-black text-white tracking-widest leading-none">{getCardinalDirection(bearing)}</div>
+                                    <div className="text-[10px] text-indigo-400 font-mono font-bold">{Math.round(bearing)}°</div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="flex flex-col items-center px-6 flex-1">
-                            <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-black mb-2">Signal</div>
-                            <div className="flex items-end gap-1.5 h-6">
-                                {[1, 2, 3, 4, 5].map((i) => (
-                                    <div
-                                        key={i}
-                                        className={`w-2 rounded-full transition-all duration-500 ${i <= signalLevel ? 'bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.5)]' : 'bg-white/10'}`}
-                                        style={{ height: `${30 + i * 15}%` }}
-                                    />
-                                ))}
+                            <div className="flex flex-col items-end">
+                                <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-black mb-2">Signal</div>
+                                <div className="flex items-end gap-1.5 h-6">
+                                    {[1, 2, 3, 4, 5].map((i) => (
+                                        <div
+                                            key={i}
+                                            className={`w-1.5 rounded-full transition-all duration-500 ${i <= signalLevel ? (isTargeted ? 'bg-emerald-400' : 'bg-indigo-400') : 'bg-white/10'}`}
+                                            style={{ height: `${30 + i * 15}%` }}
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Secondary Status Badges */}
                     <div className="flex justify-center gap-3 animate-in fade-in zoom-in duration-1000 delay-300">
-                        {isTargeted && (
-                            <div className="bg-indigo-500 text-white px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-lg animate-pulse">
-                                <Zap className="w-3 h-3 fill-white" /> Target Locked
+                        {isTargeted ? (
+                            <div className="bg-emerald-500 text-white px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-lg animate-pulse">
+                                <Target className="w-3 h-3 fill-white" /> Target Locked
+                            </div>
+                        ) : (
+                            <div className="bg-indigo-500/80 backdrop-blur-md text-white px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-lg">
+                                <Zap className="w-3 h-3 fill-white" /> Tracking Node
                             </div>
                         )}
-                        <div className="bg-white/10 backdrop-blur-md text-white/60 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-white/5">
-                            Sensor: {Math.round(heading)}°
+                        <div className="bg-white/10 backdrop-blur-md text-white/60 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-white/5 flex items-center gap-2">
+                            <ShieldCheck className="w-3 h-3 text-emerald-400" /> Secure Link
                         </div>
                     </div>
                 </div>
@@ -436,11 +557,11 @@ export default function ARView() {
                         <div className="absolute inset-0 bg-emerald-500/20 blur-[100px] rounded-full scale-150 animate-pulse" />
 
                         <div className="relative bg-slate-900 border border-emerald-500/30 p-10 rounded-[3rem] shadow-[0_50px_100px_rgba(16,185,129,0.3)] text-center">
-                            <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl rotate-12">
+                            <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-[0_20px_40px_rgba(16,185,129,0.4)] rotate-12 group-hover:rotate-0 transition-transform duration-700">
                                 <CheckCircle className="w-12 h-12 text-white" />
                             </div>
-                            <h2 className="text-4xl font-black text-white mb-3 tracking-tighter italic">ARRIVAL SUCCESS</h2>
-                            <p className="text-emerald-400 font-mono text-[10px] uppercase tracking-[0.5em] mb-8 font-bold">Waypoint Reached</p>
+                            <h2 className="text-4xl font-black text-white mb-3 tracking-tighter italic leading-none">OBJECTIVE REACHED</h2>
+                            <p className="text-emerald-400 font-mono text-[10px] uppercase tracking-[0.4em] mb-8 font-bold opacity-80">Coordinates Synchronized</p>
 
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
                                 <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-2">Location Identifier</p>
