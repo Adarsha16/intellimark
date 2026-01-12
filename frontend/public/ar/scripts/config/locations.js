@@ -1,0 +1,68 @@
+export const locations = [
+  {
+    id: 'loc20',
+    name: 'Empower Her',
+    venue: 'Nepal Technology Innovation Center',
+    image: '/empoweher.webp',
+    lat: 27.617229331390195,
+    lng: 85.53488796810232,
+    startDate: new Date('2025-12-20T00:00:00'),
+  },
+  {
+    id: 'loc21',
+    name: 'We Shield Cyber',
+    venue: 'CV Raman Hall',
+    image: '/weshieldlogo.webp',
+    lat: 27.61932251457995,
+    lng: 85.53867636809949,
+    startDate: new Date('2025-12-21T00:00:00'),
+  },
+  {
+    id: 'loc22a',
+    name: 'Idea Pitching',
+    venue: 'Nepal Technology Innovation Center',
+    image: '/idea_pitching.webp',
+    lat: 27.617229331390195,
+    lng: 85.53488796810232,
+    startDate: new Date('2025-12-22T00:00:00'),
+  },
+  {
+    id: 'loc22b',
+    name: 'Gaming Tournament',
+    venue: 'Multipurpose Hall',
+    image: '/gaming.webp',
+    lat: 27.619401329473423,
+    lng: 85.53723145170305,
+    startDate: new Date('2025-12-22T00:00:00'),
+  },
+  {
+    id: 'loc24',
+    name: 'Hackfest –  Day 1',
+    venue: 'Multipurpose Hall',
+    image: '/hackfest.webp',
+    lat: 27.619401329473423,
+    lng: 85.53723145170305,
+    startDate: new Date('2025-12-24T00:00:00'),
+  },
+  {
+    id: 'loc25',
+    name: 'Hackfest –  Day 2',
+    venue: 'Multipurpose Hall',
+    image: '/hackfest.webp',
+    lat: 27.619401329473423,
+    lng: 85.53723145170305,
+    startDate: new Date('2025-12-25T00:00:00'),
+  },
+  {
+    id: 'loc26',
+    name: 'Main Day',
+    venue: 'Kathmandu University',
+    image: '/itmeetlogo.svg',
+    lat: 27.619842476976466,
+    lng: 85.53835213024166,
+    startDate: new Date('2025-12-26T00:00:00'),
+  },
+]
+
+// Sort by date
+locations.sort((a, b) => a.startDate - b.startDate)

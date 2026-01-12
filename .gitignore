@@ -1,1 +1,9 @@
-aishit/
+*.parquet
+
+dataset/
+venv310/
+
+# Ignore training outputs and checkpoints
+*_output/
+checkpoint-*/
+*.lock

@@ -12,6 +12,7 @@ import Events from './pages/Events';
 import Profile from './pages/Profile';
 import Groups from './pages/Groups';
 import DistanceMap from './pages/DistanceMap';
+import ARView from './pages/ARView';
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -37,6 +38,7 @@ function App() {
             </Route>
 
             <Route path="/distance-map" element={<ProtectedRoute><DistanceMap /></ProtectedRoute>} />
+            <Route path="/ar-view" element={<ProtectedRoute><ARView /></ProtectedRoute>} />
           </Routes>
         </EventsProvider>
       </AuthProvider>

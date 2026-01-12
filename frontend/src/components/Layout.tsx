@@ -70,7 +70,7 @@ const Layout = () => {
     return (
         <div className="flex h-screen overflow-hidden bg-gradient-to-br from-purple-50 via-white to-indigo-50">
             {/* Sidebar */}
-            <aside className="hidden md:flex w-72 flex-col bg-white/80 backdrop-blur-xl border-r shadow-xl">
+            <aside className="hidden md:flex w-72 flex-col bg-white/80 backdrop-blur-xl border-r shadow-xl relative z-0">
                 {/* Logo */}
                 <div className="p-6 flex items-center gap-3 border-b">
                     <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Pencil, Trash2, Image as ImageIcon, Loader2, Handshake, Users, Banknote, Building2, Map as MapIcon, Megaphone, Target } from 'lucide-react';
+import { Calendar, MapPin, Pencil, Trash2, Image as ImageIcon, Loader2, Handshake, Users, Banknote, Building2, Map as MapIcon, Megaphone, Target, Navigation } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { motion } from 'framer-motion';
@@ -17,7 +17,7 @@ interface EventCardProps {
     onPredict: (event: Event) => void;
 }
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function EventCard({ event, generationStartTime, onEdit, onDelete, onGeneratePoster, onMatch, onMarket, onPredict }: EventCardProps) {
     const navigate = useNavigate();
@@ -165,13 +165,21 @@ export default function EventCard({ event, generationStartTime, onEdit, onDelete
             <div className="p-4 bg-slate-50 border-t border-slate-100 space-y-2">
                 {/* AR / Map Actions */}
                 {(event.latitude && event.longitude) ? (
-                    <Button
-                        variant="outline"
-                        className="bg-white gap-2 w-full border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-                        onClick={() => navigate(`/distance-map?lat=${event.latitude}&lng=${event.longitude}&title=${event.title}`)}
-                    >
-                        <MapIcon className="w-4 h-4" /> Map Path
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button
+                            variant="outline"
+                            className="bg-white gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                            onClick={() => navigate(`/distance-map?lat=${event.latitude}&lng=${event.longitude}&title=${encodeURIComponent(event.title)}`)}
+                        >
+                            <MapIcon className="w-4 h-4" /> Map
+                        </Button>
+                        <Button
+                            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white gap-2 border-none shadow-md hover:shadow-lg hover:from-indigo-700 hover:to-purple-700"
+                            onClick={() => navigate(`/ar-view?lat=${event.latitude}&lng=${event.longitude}&title=${encodeURIComponent(event.title)}`)}
+                        >
+                            <Navigation className="w-4 h-4" /> AR Nav
+                        </Button>
+                    </div>
                 ) : (
                     <div className="text-[10px] text-center text-slate-400 py-1">
                         No GPS coordinates set

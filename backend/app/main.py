@@ -37,7 +37,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Load model globally (CPU mode).
 # Note: This runs once when the server starts.
 
-# CORS Setup (Allow Frontend)
+# CORS Setup (Allow Frontend + Ngrok)
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -47,7 +47,8 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex="https?://.*",  # Optional: Allows all local dev URLs
+    # Allow ngrok and other tunneling services
+    allow_origin_regex=r"https?://.*\.(ngrok-free\.dev|ngrok\.io|ngrok-free\.app|localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

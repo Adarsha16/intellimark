@@ -103,3 +103,22 @@
 .animate-count {
   animation: countUp 0.5s ease-out forwards;
 }
+
+/* Fix Leaflet map black background */
+.leaflet-container {
+  background-color: #f8fafc !important;
+  background: #f8fafc !important;
+}
+
+.leaflet-tile-container {
+  background-color: transparent !important;
+}
+
+/* Ensure AR view doesn't leave black overlay after navigation */
+body:not(.ar-active) {
+  background-color: var(--bg-primary) !important;
+}
+
+html:not(.ar-active) {
+  background-color: var(--bg-primary) !important;
+}

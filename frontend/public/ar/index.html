@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="icon" href="/web.svg" type="image/x-icon">
+    <!-- A-Frame and AR.js -->
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <link href=" https://cdn.jsdelivr.net/npm/@glidejs/glide@3.7.1/dist/css/glide.core.min.css " rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="styles/main.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AR Navigation</title>
+  </head>
+  <body>
+    <!-- HUD -->
+    <div id="nav-hud">
+      <div class="nav-info-bar">
+        <div class="nav-item">
+          <span class="nav-label">Distance</span>
+          <span class="nav-value" id="dist-info">-- m</span>
+        </div>
+        <div class="nav-divider"></div>
+        <div class="nav-item">
+          <span class="nav-label">Direction</span>
+          <span class="nav-value" id="dir-info">--</span>
+        </div>
+            <div class="nav-divider"></div>
+        <div class="nav-item signal-container">
+        <span class="signal-label">Signal Str.</span>
+        <div class="signal-bars">
+          <div class="signal-bar" id="sig-1"></div>
+          <div class="signal-bar" id="sig-2"></div>
+          <div class="signal-bar" id="sig-3"></div>
+          <div class="signal-bar" id="sig-4"></div>
+          <div class="signal-bar" id="sig-5"></div>
+        </div>
+     
+      </div>
+      </div>
+      <div id="arrival-msg" class="arrival-banner" style="display: none;">
+        🎉 ARRIVED AT DESTINATION!
+      </div>
+      <!-- Signal Strength Meter -->
+      
+      </div>
+    </div>
+
+    <!-- Carousel -->
+    <div id="carousel-wrapper">
+      <div class="glide">
+        <div class="glide__track" data-glide-el="track">
+          <ul class="glide__slides" id="event-slides">
+            <!-- Slides will be dynamically inserted here -->
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- AR Scene -->
+    <a-scene
+      vr-mode-ui="enabled:false"
+      cursor="rayOrigin: mouse"
+      raycaster="objects: .clickable"
+      arjs="sourceType: webcam; videoTexture:true; debugUIEnabled:false;"
+    >
+      <a-camera
+        gps-camera="minDistance:0; positionMinAccuracy:100; alert:true;"
+        rotation-reader
+      >
+        <!-- Arrow entity -->
+        <a-entity
+          id="nav-arrow"
+          visible="false"
+          position="0 -0.3 -1"
+          rotation="-90 0 0"
+          animation="property: position; dir: alternate; dur: 2000; loop: true; to: 0 -0.25 -1"
+        >
+ 
+
+          <!-- Internal Glow Core -->
+          <a-cylinder
+            color="#ffd700"
+            height="0.15"
+            radius="0.015"
+            position="0 0 0"
+            material="
+              emissive:#ffeb3b;
+              emissiveIntensity: 0.8;
+              metalness: 0.3;
+              roughness: 0.2;
+              opacity: 1;
+            "
+          ></a-cylinder>
+
+          <!-- Outer Shell - Medium Metallic Yellow -->
+          <a-cylinder
+            color="#f4c542"
+            height="0.17"
+            radius="0.04"
+            position="0 0 0"
+            material="metalness: 0.6; roughness: 0.4; emissive: #f4c542; emissiveIntensity: 0.3; opacity: 1;"
+          ></a-cylinder>
+
+          <!-- Arrowhead - Darker Yellow, More Metallic -->
+          <a-cone
+            color="#f4c542"
+            radius-bottom="0.08"
+            radius-top="0"
+            height="0.12"
+            position="0 0.145 0"
+            material="metalness: 0.75; roughness: 0.3; emissive: #c99a1f; emissiveIntensity: 0.4; opacity: 1;"
+          ></a-cone>
+        </a-entity>
+      </a-camera>
+      <!-- Destination Injection -->
+      <a-entity id="destinations-container"></a-entity>
+    </a-scene>
+    <script src=" https://cdn.jsdelivr.net/npm/@glidejs/glide@3.7.1/dist/glide.min.js "></script>
+    <script type="module" src="scripts/app.js"></script>
+  </body>
+</html>
