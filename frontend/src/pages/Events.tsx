@@ -17,7 +17,7 @@ import PredictionModal from '../components/events/PredictionModal';
 
 export default function EventsPage() {
     // 1. Get Logic from Hook
-    const { events, loading, generatingTasks, createEvent, updateEvent, deleteEvent, generatePoster, findSponsors, generateMarketing } = useEvents();
+    const { events, loading, generatingTasks, createEvent, updateEvent, deleteEvent, generatePoster, findSponsors, generateMarketing, fetchEvents } = useEvents();
 
     // 2. Local View State (Modals)
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -36,6 +36,7 @@ export default function EventsPage() {
     const [predictionData, setPredictionData] = useState<any | null>(null);
     const [predictionLoading, setPredictionLoading] = useState(false);
     const [predictionEventName, setPredictionEventName] = useState('');
+    const [predictionEventId, setPredictionEventId] = useState<number | null>(null);
 
     // 3. Handlers
     const handleOpenCreate = () => {
@@ -85,6 +86,7 @@ export default function EventsPage() {
 
     const handlePredict = async (event: Event) => {
         setPredictionEventName(event.title);
+        setPredictionEventId(event.id);
         setPredictionData(null);
         setPredictionLoading(true);
         setIsPredictOpen(true);
@@ -97,6 +99,28 @@ export default function EventsPage() {
             setIsPredictOpen(false);
         } finally {
             setPredictionLoading(false);
+        }
+    };
+
+    const handleOptimizationComplete = async () => {
+        await fetchEvents(); // Update list
+        // Re-run prediction
+        if (predictionEventId) {
+            setPredictionLoading(true);
+            try {
+                const res = await api.get(`/predict/${predictionEventId}`);
+                setPredictionData(res.data);
+
+                // Update title in modal if possible? 
+                // The modal uses 'predictionEventName'. We should update that too.
+                const updatedEvent = (await api.get('/events/')).data.find((e: Event) => e.id === predictionEventId);
+                if (updatedEvent) setPredictionEventName(updatedEvent.title);
+
+            } catch (e) {
+                toast.error("Failed to refresh prediction");
+            } finally {
+                setPredictionLoading(false);
+            }
         }
     };
 
@@ -176,6 +200,8 @@ export default function EventsPage() {
                 prediction={predictionData}
                 isLoading={predictionLoading}
                 eventName={predictionEventName}
+                eventId={predictionEventId}
+                onOptimizationComplete={handleOptimizationComplete}
             />
         </div>
     );
