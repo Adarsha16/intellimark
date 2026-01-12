@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
@@ -9,7 +9,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.models.admin import ActivityLog
 from app.models.event import Event
-from app.services.strategy_agent import generate_club_strategy
+from app.services.strategy_agent import generate_club_strategy, get_latest_strategy
 from app.services.pdf_generator import create_executive_pdf
 from app.api.deps import get_current_admin
 from app.core.logger import log_activity
@@ -129,13 +129,32 @@ async def get_system_logs(
 
 @router.post("/generate-strategy")
 async def get_ai_strategy_report(
-    db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
 ):
     """
-    Analyzes club data (Events + Sponsors) to produce a strategic roadmap.
+    Starts generating a strategic roadmap in the background.
+    Returns immediately while generation continues.
     """
-    report = await generate_club_strategy(db)
-    return {"report": report}
+    from app.services.strategy_agent import generate_and_save_strategy
+
+    # Start generation in background
+    background_tasks.add_task(generate_and_save_strategy, db)
+
+    return {
+        "status": "generating",
+        "message": "Strategy generation started in background",
+    }
+
+
+@router.get("/latest-strategy")
+async def get_latest_strategy_report(admin: User = Depends(get_current_admin)):
+    """
+    Retrieves the most recently generated strategy report from storage.
+    """
+    data = get_latest_strategy()
+    return data  # Returns {"report": "...", "generated_at": "..."}
 
 
 @router.post("/backup")
@@ -163,29 +182,29 @@ async def get_activity_trend(
     # 1. Aggregate Events by Month
     events_result = await db.execute(
         select(
-            func.to_char(Event.created_at, 'Mon').label("month"),
-            func.count(Event.id).label("count")
+            func.to_char(Event.created_at, "Mon").label("month"),
+            func.count(Event.id).label("count"),
         )
         .where(Event.created_at >= six_months_ago)
-        .group_by(func.to_char(Event.created_at, 'Mon'))
+        .group_by(func.to_char(Event.created_at, "Mon"))
     )
-    
+
     # 2. Aggregate Users by Month
     users_result = await db.execute(
         select(
-            func.to_char(User.created_at, 'Mon').label("month"),
-            func.count(User.id).label("count")
+            func.to_char(User.created_at, "Mon").label("month"),
+            func.count(User.id).label("count"),
         )
         .where(User.created_at >= six_months_ago)
-        .group_by(func.to_char(User.created_at, 'Mon'))
+        .group_by(func.to_char(User.created_at, "Mon"))
     )
 
     # Process results into a dictionary
     data_map = {}
-    
+
     # Initialize with last 6 months (empty)
     for i in range(5, -1, -1):
-        d = today - datetime.timedelta(days=i*30)
+        d = today - datetime.timedelta(days=i * 30)
         month_name = d.strftime("%b")
         data_map[month_name] = {"month": month_name, "events": 0, "users": 0, "sort": d}
 
@@ -195,7 +214,7 @@ async def get_activity_trend(
         c = row.count
         if m in data_map:
             data_map[m]["events"] = c
-    
+
     # Fill Users
     for row in users_result.all():
         m = row.month

@@ -26,9 +26,14 @@ const DEFAULT_FORM: EventFormData = {
     longitude: 0
 };
 
+// Module-level lock to prevent StrictMode double-invocation issues
+let geoLockActive = false;
+
 export default function EventFormModal({ isOpen, onClose, onSubmit, initialData, isEditing }: EventFormModalProps) {
     const [formData, setFormData] = useState<EventFormData>(DEFAULT_FORM);
     const [showMap, setShowMap] = useState(false);
+    const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+    // Ref for synchronous locking
 
     useEffect(() => {
         if (isOpen && initialData) {
@@ -65,7 +70,6 @@ export default function EventFormModal({ isOpen, onClose, onSubmit, initialData,
 
                 if (finalLoc) {
                     setFormData(prev => ({ ...prev, location: finalLoc }));
-                    toast.success(`Location set: ${finalLoc.substring(0, 30)}...`);
                 }
             }
         } catch (e) {
@@ -73,30 +77,108 @@ export default function EventFormModal({ isOpen, onClose, onSubmit, initialData,
         }
     };
 
-    const grabLocation = () => {
+    const grabLocation = async () => {
         if (!navigator.geolocation) return toast.error("Geolocation not supported");
-        toast.promise(
-            new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        const { latitude, longitude } = pos.coords;
-                        setFormData(prev => ({
-                            ...prev,
-                            latitude: latitude,
-                            longitude: longitude
-                        }));
-                        reverseGeocode(latitude, longitude);
-                        resolve(pos);
-                    },
-                    (err) => reject(err)
-                );
-            }),
-            {
-                loading: 'Getting coordinates...',
-                success: 'Location captured!',
-                error: 'Could not get location.',
+        if (geoLockActive) return;
+
+        // Check if permission is already denied
+        try {
+            const result = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+            if (result.state === 'denied') {
+                return toast.error("Location access is blocked. Click the lock icon 🔒 in your address bar to allow it.", {
+                    duration: 5000
+                });
             }
-        );
+        } catch (e) {
+            // Ignore (some browsers don't support this query)
+        }
+
+        geoLockActive = true;
+        setIsLoadingLocation(true);
+        toast.dismiss();
+        const toastId = toast.loading("Getting your location...");
+
+        // Helper to attempt geolocation
+        const attemptGeolocation = (isRetry: boolean = false): void => {
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    if (!geoLockActive) return;
+
+                    const { latitude, longitude, accuracy } = pos.coords;
+                    console.log(`[GEO] Acquired location: ${latitude}, ${longitude} (Accuracy: ${Math.round(accuracy)}m)`);
+
+                    setFormData(prev => ({
+                        ...prev,
+                        latitude: latitude,
+                        longitude: longitude
+                    }));
+
+                    // Warn if accuracy is poor (e.g. keying off IP implementation which is usually > 1000m)
+                    if (accuracy > 1000) {
+                        toast("Location accuracy is low (" + Math.round(accuracy) + "m). You might want to adjust it on the map.", {
+                            icon: '⚠️',
+                            duration: 5000,
+                        });
+                    }
+
+                    // Silent reverse geocode
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            const addr = data.address || {};
+                            const shortLoc = [
+                                addr.building || addr.shop || addr.amenity || addr.tourism,
+                                addr.road,
+                                addr.suburb || addr.city || addr.town
+                            ].filter(Boolean).join(", ");
+                            const finalLoc = shortLoc || data.display_name || "";
+
+                            if (finalLoc) {
+                                setFormData(prev => ({ ...prev, location: finalLoc }));
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Address lookup failed", err);
+                    }
+
+                    toast.dismiss(toastId);
+                    if (accuracy <= 1000) toast.success("Location captured!");
+                    geoLockActive = false;
+                    setIsLoadingLocation(false);
+                },
+                (err) => {
+                    // If PERMISSION_DENIED on first attempt, retry after delay
+                    if (err.code === 1 && !isRetry) {
+                        toast.dismiss(toastId);
+                        const retryToastId = toast.loading("Waiting for location permission...");
+                        setTimeout(() => {
+                            toast.dismiss(retryToastId);
+                            attemptGeolocation(true);
+                        }, 2000);
+                        return;
+                    }
+
+                    if (!geoLockActive) return;
+
+                    console.error("Geolocation error:", err);
+                    toast.dismiss(toastId);
+
+                    let msg = "Could not get location.";
+                    if (err.code === 1) msg = "Please allow location access in your browser.";
+                    if (err.code === 2) msg = "Position unavailable.";
+                    if (err.code === 3) msg = "Location request timed out.";
+
+                    toast.error(msg);
+                    geoLockActive = false;
+                    setIsLoadingLocation(false);
+                },
+                { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+            );
+        };
+
+        // Start the first attempt
+        attemptGeolocation(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -177,8 +259,15 @@ export default function EventFormModal({ isOpen, onClose, onSubmit, initialData,
                                 <p className="text-[10px] text-slate-400 italic">Click map to set coordinates.</p>
                             </div>
                         ) : (
-                            <Button type="button" variant="outline" onClick={grabLocation} className="w-full gap-2 text-xs">
-                                <Target className="w-3 h-3" /> Use My Current GPS Location
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={grabLocation}
+                                disabled={isLoadingLocation}
+                                className="w-full gap-2 text-xs disabled:opacity-50 disabled:cursor-wait"
+                            >
+                                <Target className={`w-3 h-3 ${isLoadingLocation ? 'animate-pulse' : ''}`} />
+                                {isLoadingLocation ? 'Locating...' : 'Use My Current GPS Location'}
                             </Button>
                         )}
 
