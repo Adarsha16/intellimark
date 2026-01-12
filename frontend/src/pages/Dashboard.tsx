@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    CartesianGrid, Cell, Area, AreaChart
+    CartesianGrid, Cell, Legend
 } from 'recharts';
 import {
     Briefcase, Users, Calendar, DollarSign, RefreshCw,
@@ -54,6 +54,7 @@ const Dashboard = () => {
     });
 
     const [chartFundingByStatus, setChartFundingByStatus] = useState<any[]>([]);
+    const [activityTrend, setActivityTrend] = useState<any[]>([]);
     const [activityTrend, setActivityTrend] = useState<any[]>([]);
     const [recentLogs, setRecentLogs] = useState<ActivityLog[]>([]);
 
@@ -119,11 +120,12 @@ const Dashboard = () => {
     const fetchData = async () => {
         setRefreshing(true);
         try {
-            const [sponsorsRes, eventsRes, usersRes, logsRes] = await Promise.allSettled([
+            const [sponsorsRes, eventsRes, usersRes, logsRes, trendRes] = await Promise.allSettled([
                 api.get('/sponsors/'),
                 api.get('/events/'),
                 api.get('/admin/users'),
-                api.get('/admin/logs')
+                api.get('/admin/logs'),
+                api.get('/admin/stats/trend')
             ]);
 
             // 1. Sponsors & Revenue
@@ -450,11 +452,11 @@ const Dashboard = () => {
                     </div>
                     <div>
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white">Activity Trend</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Event & Sponsor growth over time</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Event & Member growth over time</p>
                     </div>
                 </div>
 
-                <div className="h-64 w-full">
+                <div className="h-72 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={activityTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <defs>
@@ -471,24 +473,32 @@ const Dashboard = () => {
                             <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#64748b' }} />
                             <YAxis tick={{ fontSize: 12, fill: '#64748b' }} />
                             <Tooltip
+                                cursor={{ fill: '#f8fafc' }}
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                             />
-                            <Area type="monotone" dataKey="events" stroke="#6366f1" fillOpacity={1} fill="url(#colorEvents)" strokeWidth={2} name="Events" />
-                            <Area type="monotone" dataKey="sponsors" stroke="#10b981" fillOpacity={1} fill="url(#colorSponsors)" strokeWidth={2} name="Sponsors" />
-                        </AreaChart>
+                            <Legend
+                                wrapperStyle={{ paddingTop: '20px' }}
+                                iconType="circle"
+                            />
+                            <Bar
+                                dataKey="events"
+                                name="Events"
+                                fill="#6366f1"
+                                radius={[4, 4, 0, 0]}
+                                barSize={32}
+                            />
+                            <Bar
+                                dataKey="users"
+                                name="New Members"
+                                fill="#10b981"
+                                radius={[4, 4, 0, 0]}
+                                barSize={32}
+                            />
+                        </BarChart>
                     </ResponsiveContainer>
                 </div>
 
-                <div className="flex justify-center gap-6 mt-4">
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-                        <span className="text-sm text-slate-600 dark:text-slate-400">Events</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                        <span className="text-sm text-slate-600 dark:text-slate-400">Sponsors</span>
-                    </div>
-                </div>
+                {/* Legend is now built-in to the chart, removing custom legend */}
             </motion.div>
 
             {/* --- AI Strategy Section (Full Width) --- */}
