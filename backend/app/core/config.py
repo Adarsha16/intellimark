@@ -15,3 +15,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+# Forced reload for .env update

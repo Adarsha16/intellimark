@@ -1,5 +1,8 @@
-import { X, TrendingUp, AlertTriangle, CheckCircle, Target, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { X, TrendingUp, AlertTriangle, CheckCircle, Target, Zap, Sparkles, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import api from '../../services/api';
+import toast from 'react-hot-toast';
 
 interface SuccessMetric {
     name: string;
@@ -24,9 +27,13 @@ interface PredictionModalProps {
     prediction: PredictionData | null;
     isLoading: boolean;
     eventName: string;
+    eventId: number | null;
+    onOptimizationComplete?: () => void;
 }
 
-export default function PredictionModal({ isOpen, onClose, prediction, isLoading, eventName }: PredictionModalProps) {
+export default function PredictionModal({ isOpen, onClose, prediction, isLoading, eventName, eventId, onOptimizationComplete }: PredictionModalProps) {
+    const [isOptimizing, setIsOptimizing] = useState(false);
+
     if (!isOpen) return null;
 
     const getScoreColor = (score: number) => {
@@ -47,6 +54,22 @@ export default function PredictionModal({ isOpen, onClose, prediction, isLoading
             case 'Medium': return 'bg-amber-100 text-amber-700';
             case 'High': return 'bg-red-100 text-red-700';
             default: return 'bg-slate-100 text-slate-700';
+        }
+    };
+
+    const handleAutoFix = async () => {
+        if (!eventId) return;
+        setIsOptimizing(true);
+        const loadId = toast.loading("AI is optimizing your event details...");
+
+        try {
+            await api.post(`/marketing/${eventId}/optimize`);
+            toast.success("Event Optimized Successfully! Recalculating score...", { id: loadId });
+            onOptimizationComplete?.();
+        } catch (e) {
+            toast.error("Failed to optimize event", { id: loadId });
+        } finally {
+            setIsOptimizing(false);
         }
     };
 
@@ -162,13 +185,26 @@ export default function PredictionModal({ isOpen, onClose, prediction, isLoading
                             <h4 className="font-bold text-indigo-700 flex items-center gap-2 mb-2">
                                 <Zap className="w-4 h-4" /> AI Recommendations
                             </h4>
-                            <ul className="space-y-2">
+                            <ul className="space-y-2 mb-4">
                                 {prediction.recommendations.map((rec, i) => (
                                     <li key={i} className="text-sm text-indigo-700 flex items-start gap-2">
                                         <span className="text-indigo-400">→</span> {rec}
                                     </li>
                                 ))}
                             </ul>
+
+                            {/* Auto-Optimization Button */}
+                            <button
+                                onClick={handleAutoFix}
+                                disabled={isOptimizing}
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2"
+                            >
+                                {isOptimizing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 text-yellow-300" />}
+                                {isOptimizing ? "Optimizing Event Details..." : "Auto-Fix (Title & Description)"}
+                            </button>
+                            <p className="text-xs text-indigo-400 text-center mt-2">
+                                AI will rewrite your title and description to maximize score.
+                            </p>
                         </div>
                     </div>
                 ) : null}
