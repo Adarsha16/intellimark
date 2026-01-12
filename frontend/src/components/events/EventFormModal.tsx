@@ -81,6 +81,18 @@ export default function EventFormModal({ isOpen, onClose, onSubmit, initialData,
         if (!navigator.geolocation) return toast.error("Geolocation not supported");
         if (geoLockActive) return;
 
+        // Check if permission is already denied
+        try {
+            const result = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+            if (result.state === 'denied') {
+                return toast.error("Location access is blocked. Click the lock icon 🔒 in your address bar to allow it.", {
+                    duration: 5000
+                });
+            }
+        } catch (e) {
+            // Ignore (some browsers don't support this query)
+        }
+
         geoLockActive = true;
         setIsLoadingLocation(true);
         toast.dismiss();
@@ -101,8 +113,7 @@ export default function EventFormModal({ isOpen, onClose, onSubmit, initialData,
                         longitude: longitude
                     }));
 
-                    // Warn if accuracy is poor (e.g. keying off IP implementation which is usually > 5000m)
-                    // GPS is usually < 50m. WiFi is ~100-500m.
+                    // Warn if accuracy is poor (e.g. keying off IP implementation which is usually > 1000m)
                     if (accuracy > 1000) {
                         toast("Location accuracy is low (" + Math.round(accuracy) + "m). You might want to adjust it on the map.", {
                             icon: '⚠️',

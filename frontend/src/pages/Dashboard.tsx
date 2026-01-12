@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    CartesianGrid, Cell, Legend, LineChart, Line
+    CartesianGrid, Cell, Legend, AreaChart, Area
 } from 'recharts';
 import {
     Briefcase, Users, Calendar, DollarSign, RefreshCw,
@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-
 
 // --- Types ---
 interface RealDataStats {
@@ -387,7 +386,7 @@ const Dashboard = () => {
                                     <Tooltip
                                         cursor={{ fill: '#f8fafc' }}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                        formatter={(val: number | undefined) => formatCurrency(val ?? 0)}
+                                        formatter={(val: any) => formatCurrency(val ?? 0)}
                                     />
                                     <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
                                         {chartFundingByStatus.map((_, index) => (
@@ -457,7 +456,8 @@ const Dashboard = () => {
 
                 <div className="h-72 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={activityTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        {/* @ts-ignore */}
+                        <AreaChart data={activityTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorEvents" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
@@ -479,25 +479,25 @@ const Dashboard = () => {
                                 wrapperStyle={{ paddingTop: '20px' }}
                                 iconType="circle"
                             />
-                            <Line
+                            <Area
                                 type="monotone"
                                 dataKey="events"
                                 name="Events"
                                 stroke="#6366f1"
+                                fillOpacity={1}
+                                fill="url(#colorEvents)"
                                 strokeWidth={3}
-                                dot={{ r: 4, fill: "#6366f1", strokeWidth: 2, stroke: "#fff" }}
-                                activeDot={{ r: 6, strokeWidth: 0 }}
                             />
-                            <Line
+                            <Area
                                 type="monotone"
-                                dataKey="users"
-                                name="New Members"
+                                dataKey="sponsors"
+                                name="Sponsors"
                                 stroke="#10b981"
+                                fillOpacity={1}
+                                fill="url(#colorSponsors)"
                                 strokeWidth={3}
-                                dot={{ r: 4, fill: "#10b981", strokeWidth: 2, stroke: "#fff" }}
-                                activeDot={{ r: 6, strokeWidth: 0 }}
                             />
-                        </LineChart>
+                        </AreaChart>
                     </ResponsiveContainer>
                 </div>
 
