@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
-import { Users, Plus, Trash2, UserPlus, X, Pencil } from 'lucide-react';
+import { Plus, Trash2, UserPlus, X, Pencil } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import toast, { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';

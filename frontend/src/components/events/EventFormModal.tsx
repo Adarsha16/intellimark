@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { type EventFormData } from '../../types';
 import { formatDateForInput } from '../../utils/dateUtils';
