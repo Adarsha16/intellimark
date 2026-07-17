@@ -1,17 +1,17 @@
-# 🚀 IntelliMark
+# IntelliMark
 
 **IntelliMark** is a next-generation Executive Club Management & Sponsorship Platform. It leverages localized AI to provide strategic insights, predictive success modeling, and comprehensive management of sponsors, members, and events.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- **🏆 Executive Dashboard:** Real-time visualization of growth trends, revenue pipeline, and system audit logs using responsive Line and Bar charts.
-- **🤖 AI Chief Strategist:** In-app AI agent that analyzes your database to generate actionable strategic reports for club growth.
-- **🔮 AI Success Predictor:** Advanced ML models (Transformers) that predict the potential success score of upcoming events based on historical data.
-- **📊 Automated PDF Reporting:** One-click executive report generation compiling financial stats and AI-driven strategies.
-- **🗺️ Geo-Aware Event Management:** Integrated Map picking and reverse geocoding for precise event location tracking.
-- **👥 Member & Sponsor CRM:** Robust management of membership lifecycle and sponsorship pipeline status.
+- ** Executive Dashboard:** Real-time visualization of growth trends, revenue pipeline, and system audit logs using responsive Line and Bar charts.
+- ** AI Chief Strategist:** In-app AI agent that analyzes your database to generate actionable strategic reports for club growth.
+- ** AI Success Predictor:** Advanced ML models (Transformers) that predict the potential success score of upcoming events based on historical data.
+- ** Automated PDF Reporting:** One-click executive report generation compiling financial stats and AI-driven strategies.
+- ** Geo-Aware Event Management:** Integrated Map picking and reverse geocoding for precise event location tracking.
+- ** Member & Sponsor CRM:** Robust management of membership lifecycle and sponsorship pipeline status.
 
 ---
 
@@ -38,7 +38,7 @@
 
 ---
 
-## 🏗️ Project Structure
+##  Project Structure
 
 ```text
 intellimark/
@@ -59,7 +59,7 @@ intellimark/
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - [Docker](https://www.docker.com/) & Docker Compose
@@ -92,7 +92,7 @@ npm run dev
 
 ---
 
-## 🤝 Usage Workflow
+##  Usage Workflow
 1.  **Onboard:** Register at `/register` and login safely.
 2.  **Manage:** Add your club sponsors and upcoming events.
 3.  **Analyze:** Use the **AI Chief Strategist** on the dashboard to get performance insights.
@@ -108,4 +108,3 @@ npm run dev
 
 ---
 
-**Developed with ❤️ and AI.**
